@@ -123,7 +123,7 @@ export default function GMApp() {
     return catalog.heroes.filter((h) => {
       if (z !== 'ALL' && h.zone !== z) return false;
       if (!q) return true;
-      return String(h.id).includes(q) || h.zone.toLowerCase().includes(q);
+      return String(h.id).includes(q) || h.zone.toLowerCase().includes(q) || h.name.toLowerCase().includes(q);
     });
   });
 
@@ -488,8 +488,10 @@ export default function GMApp() {
                       <div class="surface-card p-3.5 flex flex-col justify-between gap-3">
                         <div class="flex items-start justify-between">
                           <div>
-                            <div class="text-sm font-bold text-ice-100">ID {h.id}</div>
-                            <div class="text-[11px] text-cyan-300/80">{h.zone}</div>
+                            <div class="text-sm font-bold text-ice-100">{h.name}</div>
+                            <div class="text-[11px] text-cyan-300/80">
+                              {h.zone} · ID {h.id}
+                            </div>
                           </div>
                           <span class={`tiny-chip ${owned() ? '' : 'muted'}`}>
                             {owned() ? `${t('levelShort')}${owned()!.level}` : t('locked')}
@@ -499,7 +501,7 @@ export default function GMApp() {
                           when={!owned()}
                           fallback={
                             <div class="text-[11px] text-ice-500">
-                              {t('star')} {owned()!.star} · {t('affection')} {t('levelShort')}
+                              {'★'.repeat(Math.max(1, Math.round(owned()!.star / 100)))} · {t('affection')} {t('levelShort')}
                               {owned()!.trustLevel}
                             </div>
                           }
