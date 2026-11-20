@@ -10,7 +10,7 @@ namespace Trimūrti.Server.Protocol.Handlers;
 ///  - 30004 claim one / all pending attachments (heroes, sigils … as entities), 30006 delete only read, claimed, not collected,
 ///    30014 collect (opt 1, attachments must be claimed first) / uncollect (0), 30008 detail marks read.
 ///  - letters: a hero's letter (MailSpecialLetterCfg) arrives once its hero is owned and its send date has passed, with its
-///    template mail and rewards; 30017 list at login, 30018 read (0 = all). 30001 brief after every change.
+///    template mail and rewards; 30017 list at login, 30018 read (0 = all). 30001 brief at login and when new mail arrives.
 /// </summary>
 public sealed class MailSystem(GameAccountRepository accounts, SourceGameConfig config, ProtoCodec codec)
 {
@@ -178,7 +178,8 @@ public sealed class MailSystem(GameAccountRepository accounts, SourceGameConfig 
             default:
                 return [HandlerHelpers.ResultOnly(codec, r, cmd + 1, 2)];
         }
-        if (cmd is 30004 or 30006 or 30008 or 30014) frames.Add(new GameResponse(30001, 0, srv, await BriefAsync(uid, ct)));
+        // No 30001 here: MailAction binds 30001 to MailData.MailInit, which makes an open mail window request the list again
+        // (30002/30020 → 30008 → 30001 → …, an endless loop). Alpha-Persei only pushes 30001 when new mail arrives.
         frames.Add(HandlerHelpers.Reply(codec, r, cmd + 1, reply));
         return frames;
     }
