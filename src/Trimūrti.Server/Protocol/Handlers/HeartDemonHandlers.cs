@@ -253,7 +253,7 @@ public sealed class HeartDemon(GameAccountRepository accounts, SourceGameConfig 
                         var stage = (long)HandlerHelpers.ReadUInt(r.Body, "stage_id");
                         var loc = Locate(stage);
                         Require(loc is { Table: "mult" } && m.Diffs.ContainsKey(loc!.Value.Difficulty), "Unknown heart demon stage");
-                        var d = m.Diffs[loc.Value.Difficulty];
+                        var d = m.Diffs[loc!.Value.Difficulty];
                         if (!d.Stages.TryGetValue(stage, out var st)) d.Stages[stage] = st = new MultStage { StageId = stage };
                         st.State = 2;
                         st.BossHp = Math.Min(10000, HandlerHelpers.ReadUInt(r.Body, "boss_hp_rate"));

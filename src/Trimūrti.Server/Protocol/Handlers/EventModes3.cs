@@ -162,7 +162,7 @@ public sealed class QuanzhouMode(GameAccountRepository accounts, SourceGameConfi
         await Accounts.SetJsonAsync(b.Uid, "quanzhou_v1", s, ct);
         var frames = await SyncAsync(b.Request, granted.Select(x => x.Item1), ct);
         var real = sea is { } sid ? Sea.GetProperty(sid.ToString()).GetProperty("stage_id").GetInt64() : b.StageId;
-        if (await new QuanzhouQuests(Accounts, config, Codec).BattleClearAsync(b.Uid, b.Srv, real, ct) is { } questDiff) frames.Add(questDiff);
+        if (await new QuanzhouQuests(Accounts, SharedConfig, Codec).BattleClearAsync(b.Uid, b.Srv, real, ct) is { } questDiff) frames.Add(questDiff);
         frames.Add(Push(b.Srv, 86035, SeaPayload(s)));
         return (frames, granted);
     }

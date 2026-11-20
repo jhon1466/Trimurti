@@ -839,7 +839,8 @@ public sealed class SummerBoard(GameAccountRepository accounts, SourceGameConfig
         JsonArray a => a.Select(ToWire).ToList(),
         JsonValue v when v.GetValueKind() == JsonValueKind.Number => N(v),
         JsonValue v when v.GetValueKind() is JsonValueKind.True or JsonValueKind.False => v.GetValueKind() == JsonValueKind.True,
-        JsonValue v => v.ToString()
+        JsonValue v => v.ToString(),
+        _ => null
     };
 
     private GameResponse F(ushort srv, uint cmd, JsonNode body) => new(cmd, 0, srv, codec.Encode($"sc_{cmd}", (Dictionary<string, object?>)ToWire(body)!));

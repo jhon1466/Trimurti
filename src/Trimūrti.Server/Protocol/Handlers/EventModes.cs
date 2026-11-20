@@ -35,7 +35,7 @@ public abstract class EventModeBase(GameAccountRepository accounts, SourceGameCo
 {
     protected readonly GameAccountRepository Accounts = accounts;
     protected readonly ProtoCodec Codec = codec;
-    protected JsonElement Cfg => config.Get(contract) ?? throw new ModeError($"Missing {contract}");
+    protected JsonElement Cfg => SharedConfig.Get(contract) ?? throw new ModeError($"Missing {contract}");
     protected static void Require(bool ok, string message) { if (!ok) throw new ModeError(message); }
     protected GameResponse Push(ushort srv, uint cmd, Dictionary<string, object?> body) => new(cmd, 0, srv, Codec.Encode($"sc_{cmd}", body));
     protected (uint, byte[]) Frame(uint cmd, Dictionary<string, object?> body) => (cmd, Codec.Encode($"sc_{cmd}", body));
