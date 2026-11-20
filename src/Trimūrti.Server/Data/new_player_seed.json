@@ -1,0 +1,17 @@
+{
+  "profile": "new_player_v1",
+  "settings": {
+    "profile_avatar_default": 2110841,
+    "profile_avatar_frame_default": 2001,
+    "profile_chat_bubble_default": 9001,
+    "profile_business_card_default": 8001,
+    "sticker_background_default": 4002,
+    "home_scene_default": 6000
+  },
+  "starter_hero": {
+    "id": 1084,
+    "star": 100,
+    "skills": [1084101, 1084201, 1084202, 1084203, 1084209, 1084305]
+  },
+  "newbie_version": 3
+}

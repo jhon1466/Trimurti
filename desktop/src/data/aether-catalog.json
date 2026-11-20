@@ -1,0 +1,1081 @@
+{
+  "heroes": [
+    {
+      "id": 1001,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1011,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 1012,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 1013,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1015,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 1016,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1017,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 1019,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 1020,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1021,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 1022,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 1024,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 1026,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1027,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1028,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1032,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1033,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1034,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 1035,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 1036,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1037,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1038,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 1039,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 1041,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 1042,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 1043,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1044,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 1045,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1046,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1047,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 1048,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 1049,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 1050,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 1052,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1053,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 1054,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 1055,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 1056,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1058,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 1059,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 1060,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 1061,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 1066,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 1067,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 1068,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1070,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 1071,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 1072,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 1073,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 1074,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 1075,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 1076,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 1077,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 1080,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1081,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1083,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1084,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1085,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1089,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1093,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 1094,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1095,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 1096,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 1097,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 1099,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 1111,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 1119,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 1127,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1132,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1133,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1137,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1138,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 1139,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 1148,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 1150,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 1156,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 1158,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 1166,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 1170,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 1184,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1194,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 1197,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 1199,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 1211,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 1248,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 1284,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 6073,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 6079,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 6080,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 6081,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 6087,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 6088,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 6089,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 6090,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 6093,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 6103,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 6104,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 6105,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 6108,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 6109,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 6110,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 6111,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 6112,
+      "race": 3,
+      "zone": "Shinou"
+    },
+    {
+      "id": 6117,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 6133,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 6138,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 6141,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 6142,
+      "race": 5,
+      "zone": "Asterism"
+    },
+    {
+      "id": 6147,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 6150,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 6152,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 9049,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 9055,
+      "race": 2,
+      "zone": "Nile"
+    },
+    {
+      "id": 9060,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 9061,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 9081,
+      "race": 9,
+      "zone": "Tian Yuan"
+    },
+    {
+      "id": 10006,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 10025,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 10051,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 10079,
+      "race": 4,
+      "zone": "Yggdrasil"
+    },
+    {
+      "id": 10097,
+      "race": 1,
+      "zone": "Olympus"
+    },
+    {
+      "id": 10142,
+      "race": 2,
+      "zone": "Nile"
+    }
+  ],
+  "items": [
+    {
+      "id": 1,
+      "name": "Estrellas Desplazadas (Shifted Stars)",
+      "cat": "Divisa"
+    },
+    {
+      "id": 2,
+      "name": "Ain Soph Coin (Oro)",
+      "cat": "Divisa"
+    },
+    {
+      "id": 3,
+      "name": "Vitalidad / Swigs",
+      "cat": "Divisa"
+    },
+    {
+      "id": 5,
+      "name": "Flores / Flower",
+      "cat": "Divisa"
+    },
+    {
+      "id": 31,
+      "name": "Voucher de Modificador",
+      "cat": "Gacha"
+    },
+    {
+      "id": 32,
+      "name": "Voucher Preciso / Functor",
+      "cat": "Gacha"
+    },
+    {
+      "id": 40101,
+      "name": "EXP Modificador Lv.1",
+      "cat": "Material"
+    },
+    {
+      "id": 40102,
+      "name": "EXP Modificador Lv.2",
+      "cat": "Material"
+    },
+    {
+      "id": 40103,
+      "name": "EXP Modificador Lv.3",
+      "cat": "Material"
+    },
+    {
+      "id": 40104,
+      "name": "EXP Modificador Lv.4",
+      "cat": "Material"
+    },
+    {
+      "id": 40201,
+      "name": "EXP Sigilo Lv.1",
+      "cat": "Material"
+    },
+    {
+      "id": 40202,
+      "name": "EXP Sigilo Lv.2",
+      "cat": "Material"
+    },
+    {
+      "id": 40203,
+      "name": "EXP Sigilo Lv.3",
+      "cat": "Material"
+    },
+    {
+      "id": 40301,
+      "name": "EXP Arma / Factor",
+      "cat": "Material"
+    },
+    {
+      "id": 40411,
+      "name": "Ruptura de Modificador I",
+      "cat": "Material"
+    },
+    {
+      "id": 40415,
+      "name": "Ruptura de Modificador V",
+      "cat": "Material"
+    },
+    {
+      "id": 40504,
+      "name": "Ruptura de Arma IV",
+      "cat": "Material"
+    },
+    {
+      "id": 40604,
+      "name": "Ruptura de Sigilo IV",
+      "cat": "Material"
+    },
+    {
+      "id": 40701,
+      "name": "Reconstructor de Sigilo",
+      "cat": "Material"
+    },
+    {
+      "id": 40801,
+      "name": "Módulo de Encanto",
+      "cat": "Material"
+    },
+    {
+      "id": 41002,
+      "name": "Módulo de Warp (跃迁)",
+      "cat": "Warp"
+    },
+    {
+      "id": 41201,
+      "name": "Material Synchro (同调)",
+      "cat": "Synchro"
+    },
+    {
+      "id": 41301,
+      "name": "Material Omega I",
+      "cat": "Material"
+    },
+    {
+      "id": 41501,
+      "name": "Núcleo de Habilidad",
+      "cat": "Material"
+    },
+    {
+      "id": 30012,
+      "name": "Regalo Común (+40 Afecto)",
+      "cat": "Afecto"
+    },
+    {
+      "id": 30013,
+      "name": "Regalo Refinado (+80 Afecto)",
+      "cat": "Afecto"
+    },
+    {
+      "id": 30014,
+      "name": "Regalo Especial (+160 Afecto)",
+      "cat": "Afecto"
+    },
+    {
+      "id": 30015,
+      "name": "Regalo Supremo (+320 Afecto)",
+      "cat": "Afecto"
+    },
+    {
+      "id": 53014,
+      "name": "Ticket de Skin / Evento",
+      "cat": "Ticket"
+    },
+    {
+      "id": 50001,
+      "name": "Regalo de Afinidad #50001",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50002,
+      "name": "Regalo de Afinidad #50002",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50003,
+      "name": "Regalo de Afinidad #50003",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50004,
+      "name": "Regalo de Afinidad #50004",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50005,
+      "name": "Regalo de Afinidad #50005",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50006,
+      "name": "Regalo de Afinidad #50006",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50007,
+      "name": "Regalo de Afinidad #50007",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50008,
+      "name": "Regalo de Afinidad #50008",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50009,
+      "name": "Regalo de Afinidad #50009",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50010,
+      "name": "Regalo de Afinidad #50010",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50011,
+      "name": "Regalo de Afinidad #50011",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50012,
+      "name": "Regalo de Afinidad #50012",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50013,
+      "name": "Regalo de Afinidad #50013",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50014,
+      "name": "Regalo de Afinidad #50014",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50015,
+      "name": "Regalo de Afinidad #50015",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50016,
+      "name": "Regalo de Afinidad #50016",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50017,
+      "name": "Regalo de Afinidad #50017",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50018,
+      "name": "Regalo de Afinidad #50018",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50019,
+      "name": "Regalo de Afinidad #50019",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50020,
+      "name": "Regalo de Afinidad #50020",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50021,
+      "name": "Regalo de Afinidad #50021",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50022,
+      "name": "Regalo de Afinidad #50022",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50023,
+      "name": "Regalo de Afinidad #50023",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50024,
+      "name": "Regalo de Afinidad #50024",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50025,
+      "name": "Regalo de Afinidad #50025",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50026,
+      "name": "Regalo de Afinidad #50026",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50027,
+      "name": "Regalo de Afinidad #50027",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50028,
+      "name": "Regalo de Afinidad #50028",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50029,
+      "name": "Regalo de Afinidad #50029",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50030,
+      "name": "Regalo de Afinidad #50030",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50031,
+      "name": "Regalo de Afinidad #50031",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50032,
+      "name": "Regalo de Afinidad #50032",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50033,
+      "name": "Regalo de Afinidad #50033",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50034,
+      "name": "Regalo de Afinidad #50034",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50035,
+      "name": "Regalo de Afinidad #50035",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50036,
+      "name": "Regalo de Afinidad #50036",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50039,
+      "name": "Regalo de Afinidad #50039",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50040,
+      "name": "Regalo de Afinidad #50040",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50041,
+      "name": "Regalo de Afinidad #50041",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50042,
+      "name": "Regalo de Afinidad #50042",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50043,
+      "name": "Regalo de Afinidad #50043",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50044,
+      "name": "Regalo de Afinidad #50044",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50045,
+      "name": "Regalo de Afinidad #50045",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50046,
+      "name": "Regalo de Afinidad #50046",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50047,
+      "name": "Regalo de Afinidad #50047",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50048,
+      "name": "Regalo de Afinidad #50048",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50049,
+      "name": "Regalo de Afinidad #50049",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50050,
+      "name": "Regalo de Afinidad #50050",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50051,
+      "name": "Regalo de Afinidad #50051",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50052,
+      "name": "Regalo de Afinidad #50052",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50053,
+      "name": "Regalo de Afinidad #50053",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50054,
+      "name": "Regalo de Afinidad #50054",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50055,
+      "name": "Regalo de Afinidad #50055",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50056,
+      "name": "Regalo de Afinidad #50056",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50057,
+      "name": "Regalo de Afinidad #50057",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50058,
+      "name": "Regalo de Afinidad #50058",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50059,
+      "name": "Regalo de Afinidad #50059",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50060,
+      "name": "Regalo de Afinidad #50060",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50061,
+      "name": "Regalo de Afinidad #50061",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50062,
+      "name": "Regalo de Afinidad #50062",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50063,
+      "name": "Regalo de Afinidad #50063",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50064,
+      "name": "Regalo de Afinidad #50064",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50065,
+      "name": "Regalo de Afinidad #50065",
+      "cat": "Afecto"
+    },
+    {
+      "id": 50066,
+      "name": "Regalo de Afinidad #50066",
+      "cat": "Afecto"
+    }
+  ]
+}

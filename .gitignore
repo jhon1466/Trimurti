@@ -1,0 +1,15 @@
+bin/
+obj/
+artifacts/
+logs/
+*.db
+*.db-wal
+*.db-shm
+.vs/
+*.user
+node_modules/
+desktop/dist/
+desktop/.astro/
+desktop/src-tauri/target/
+desktop/src-tauri/gen/
+*.pfx

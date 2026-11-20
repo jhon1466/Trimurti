@@ -1,0 +1,27 @@
+{
+  "source": "Alpha-Persei-Cluster README platform table and v5_server/res_version_manager.py",
+  "platform": "PC",
+  "supportedResourceBuilds": [
+    {
+      "version": "v5.2.1",
+      "baselineTheme": 43,
+      "build": "229"
+    },
+    {
+      "version": "v5.3.0",
+      "baselineTheme": 44,
+      "build": "311"
+    },
+    {
+      "version": "v5.3.1",
+      "baselineTheme": 44,
+      "build": "321"
+    }
+  ],
+  "currentSourceDynamicBuild": "332",
+  "defaultBuild": "321",
+  "notes": [
+    "Build 332 exists in checked-out source dynamic_versions.json but is not listed in README PC resource table; do not treat it as confirmed PC support.",
+    "Unity application version and resource build are separate values."
+  ]
+}

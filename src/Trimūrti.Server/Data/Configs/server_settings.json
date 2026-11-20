@@ -1,0 +1,43 @@
+{
+  "_doc": "Operator settings of this private server, pushed at login. Edit freely; nothing here is player data.",
+  "client_setting": {
+    "sign_in_propel_switch": 1,
+    "month_card_propel_switch": 1
+  },
+  "open_system_ids": [
+    15,
+    7,
+    6,
+    5,
+    3,
+    2,
+    1
+  ],
+  "media_list": [
+    1,
+    2,
+    3
+  ],
+  "closed_system_ids": [
+    902
+  ],
+  "suspended_systems": [
+    {
+      "type": 1,
+      "id_list": [
+        901,
+        902
+      ]
+    },
+    {
+      "type": 3,
+      "id_list": []
+    }
+  ],
+  "announcements": [],
+  "gift_limit": false,
+  "hide_list": [],
+  "shop_item_cfg_list": [],
+  "community_welfare_state": 0,
+  "_doc_extra": "gift_limit → 12019; hide_list [{type,id_list}] → 12099 (HideInfoData: hero/skin/equip/servant/portrait kept hidden); shop_item_cfg_list → 20007 (server-side goods overrides, empty = client ShopCfg); community_welfare_state → 31207 (CommunityData welfare type)."
+}
