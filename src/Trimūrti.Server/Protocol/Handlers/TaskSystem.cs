@@ -179,13 +179,27 @@ public sealed class TaskSystem(GameAccountRepository accounts, SourceGameConfig 
         return new() { ["assignment_list"] = list.ToArray(), ["send_type"] = 0u };
     }
 
-    public Dictionary<string, object?> PointPayload(State s) => new()
+    /// <summary>
+    /// 28019: every ActivityPtCfg point type, also those with no points yet (after the daily/weekly reset). The client's
+    /// ActivityPtData only creates the claimed-chest list for the types listed here, and TaskDailyGiftItem indexes it
+    /// for each type: a missing type leaves the task window black.
+    /// </summary>
+    public Dictionary<string, object?> PointPayload(State s)
     {
-        ["pt_list"] = s.Points.OrderBy(x => x.Key).Select(x => (object)new Dictionary<string, object?>
+        var ids = s.Points.Keys.ToHashSet();
+        if (PtCfg.ValueKind == JsonValueKind.Object)
+            foreach (var p in PtCfg.EnumerateObject())
+                if (int.TryParse(p.Name, out var id)) ids.Add(id);
+        return new()
         {
-            ["activity_pt_id"] = (uint)x.Key, ["active_point"] = (uint)x.Value.Point, ["get_id_list"] = x.Value.Got.Select(g => (uint)g).ToArray()
-        }).ToArray()
-    };
+            ["pt_list"] = ids.Order().Select(id => (object)new Dictionary<string, object?>
+            {
+                ["activity_pt_id"] = (uint)id,
+                ["active_point"] = (uint)(s.Points.GetValueOrDefault(id)?.Point ?? 0),
+                ["get_id_list"] = (s.Points.GetValueOrDefault(id)?.Got ?? []).Select(g => (uint)g).ToArray()
+            }).ToArray()
+        };
+    }
 
     // ---------------- claims ----------------
 

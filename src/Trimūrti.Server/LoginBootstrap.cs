@@ -467,6 +467,11 @@ public sealed class LoginBootstrap(GameAccountRepository accounts, ProtoCodec co
         var playerState = await BuildPlayerStateAsync(uid, lobby, now, cancellationToken);
         var own = payloads.Concat(playerState).ToList();
         own.Add((24061, await new Protocol.Handlers.ChapterMap(accounts, new SourceGameConfig(), codec).LoginFrameAsync(uid, cancellationToken)));
+        // Empty fallbacks only for frames no system built: Merge keeps the first frame of each command, so adding them
+        // first hid the real ones (28019 activity points → black task window, event modes, autochess, summer board…).
+        var built = own.Select(f => f.Item1).ToHashSet();
+        foreach (var cmd in FreshPlayerFrames.Where(c => !built.Contains(c)))
+            own.Add((cmd, codec.Encode("sc_" + cmd, defaults.Build("sc_" + cmd))));
         own.AddRange(LoginDynamicFrames.Build(codec, defaults, own.Select(f => f.Item1).ToHashSet()).ToList());
         return LoginPushCatalog.Merge(own).Select(item => new GameResponse(
             item.Command,
@@ -494,8 +499,6 @@ public sealed class LoginBootstrap(GameAccountRepository accounts, ProtoCodec co
     private async Task<List<(uint Command, byte[] Payload)>> BuildPlayerStateAsync(long uid, LobbySnapshot lobby, long now, CancellationToken ct)
     {
         var frames = new List<(uint, byte[])>();
-        foreach (var cmd in FreshPlayerFrames)
-            frames.Add((cmd, codec.Encode("sc_" + cmd, defaults.Build("sc_" + cmd))));
 
         // 10503: server clock + refresh points. The captured one carried the capture's date (August), which set the
         // client clock in the past on every login and made it re-claim the daily sign.
