@@ -230,9 +230,34 @@ public sealed class SourceGameConfig
         53, 54, 55, 56, 58, 60, 61, 101, 53029, 53030, 53111
     };
 
+    /// <summary>Client ItemCfg type of every stackable item (item_types.json): 1 currency, 4 props, 5 gift/pack, 6 material,
+    /// 10 archive gift, 16 canteen ingredient, 17 club.</summary>
+    public IReadOnlyDictionary<long, int> ItemTypes => _itemTypes ??= LoadItemTypes();
+    private Dictionary<long, int>? _itemTypes;
+
+    private Dictionary<long, int> LoadItemTypes()
+    {
+        var map = new Dictionary<long, int>();
+        if (Get("item_types.json") is { ValueKind: JsonValueKind.Object } root && root.TryGetProperty("types", out var types))
+            foreach (var p in types.EnumerateObject())
+                if (long.TryParse(p.Name, out var id) && p.Value.TryGetInt32(out var t)) map[id] = t;
+        return map;
+    }
+
+    /// <summary>Currency in the client's sense (ItemCfg type 1), stored in the currency table.</summary>
+    public bool IsCurrencyItem(long id) => ValidCurrencyIds.Contains(id) || ItemTypes.TryGetValue(id, out var t) && t == 1;
+
+    /// <summary>
+    /// Every stackable item the client knows (ItemCfg types 4/5/6/10/16/17), plus the server-managed currencies and the
+    /// trust gifts. Used by the login inventory (17009) and the GM "grant all items". Other type-1 currencies are left out of
+    /// "grant all" on purpose: several of them (vitality, event tickets…) are driven by their own systems.
+    /// </summary>
     public IReadOnlyList<long> GetAllItemIds()
     {
-        var ids = new HashSet<long>(ValidCurrencyIds)
+        var ids = new HashSet<long>(ValidCurrencyIds);
+        foreach (var (id, type) in ItemTypes)
+            if (type != 1) ids.Add(id);
+        ids.UnionWith(new long[]
         {
             // Functor / Servant awakening & selector materials (verified in 15:50 working session)
             10001, 10002, 10003, 10004, 10005, 10006, 10007, 10008, 10009, 10010,
@@ -255,7 +280,7 @@ public sealed class SourceGameConfig
             41002, 41201, 41301, 41302, 41303, 41401, 41501, 41601, 41701,
             // Gacha / Skin / Event vouchers
             53014, 53015, 53193
-        };
+        });
         if (Get("trust_item_cfg.json") is { ValueKind: JsonValueKind.Object } trust &&
             trust.TryGetProperty("items", out var trustItems) && trustItems.ValueKind == JsonValueKind.Object)
         {

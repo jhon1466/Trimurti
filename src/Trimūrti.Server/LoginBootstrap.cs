@@ -188,7 +188,12 @@ public sealed class LoginBootstrap(GameAccountRepository accounts, ProtoCodec co
                 ["id"] = id,
                 ["num"] = dbCurrencyMap.TryGetValue(id, out var count) && count > 0 ? count : 99_999_999L,
                 ["time_valid"] = 0u
-            }).ToArray();
+            })
+            // Other client currencies (ItemCfg type 1) only with what the player really has.
+            .Concat(state.Inventory
+                .Where(x => x.Source == "currency" && x.Count > 0 && !validCurrencyIds.Contains(x.Id) && sourceConfig.IsCurrencyItem(x.Id))
+                .Select(x => (object?)new Dictionary<string, object?> { ["id"] = x.Id, ["num"] = x.Count, ["time_valid"] = 0u }))
+            .ToArray();
 
         var materials = state.Inventory
             .Where(x => x.Source == "material" && x.Count > 0 && validItemIds.Contains(x.Id) && !validCurrencyIds.Contains(x.Id))

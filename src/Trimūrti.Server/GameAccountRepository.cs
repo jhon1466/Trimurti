@@ -472,9 +472,11 @@ public sealed partial class GameAccountRepository
         return Convert.ToInt64(await command.ExecuteScalarAsync(cancellationToken) ?? 0L);
     }
 
+    private static readonly SourceGameConfig SharedConfig = new();
+
     private async Task<bool> IsCurrencyAsync(long itemId, CancellationToken cancellationToken)
     {
-        if (itemId < 100 || itemId is 53029 or 53111) return true;
+        if (itemId < 100 || itemId is 53029 or 53111 || SharedConfig.IsCurrencyItem(itemId)) return true;
         await using var connection = await OpenAsync(cancellationToken);
         await using var command = connection.CreateCommand();
         command.CommandText = "SELECT category FROM item_catalog WHERE id=$id LIMIT 1";

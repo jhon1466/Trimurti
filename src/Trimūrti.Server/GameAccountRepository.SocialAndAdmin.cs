@@ -380,13 +380,6 @@ public sealed partial class GameAccountRepository
             }
 
             await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken);
-            await using (var delCmd = connection.CreateCommand())
-            {
-                delCmd.Transaction = transaction;
-                delCmd.CommandText = "DELETE FROM material WHERE uid=$uid";
-                delCmd.Parameters.AddWithValue("$uid", uid);
-                await delCmd.ExecuteNonQueryAsync(cancellationToken);
-            }
             await using var curCmd = connection.CreateCommand();
             curCmd.Transaction = transaction;
             curCmd.CommandText = """
@@ -413,7 +406,7 @@ public sealed partial class GameAccountRepository
             foreach (var itemId in itemIds.Distinct())
             {
                 if (itemId <= 0) continue;
-                var isCurrency = SourceGameConfig.ValidCurrencyIds.Contains(itemId) || currencyIds.Contains(itemId);
+                var isCurrency = SharedConfig.IsCurrencyItem(itemId) || currencyIds.Contains(itemId);
                 if (isCurrency)
                 {
                     curIdParam.Value = itemId;
