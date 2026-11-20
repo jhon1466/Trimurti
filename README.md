@@ -1,6 +1,26 @@
+<div align="center">
+
+<img src="desktop/public/icon.png" alt="Trimūrti" width="150" />
+
 # Trimūrti
 
+**Servidor privado local de Aether Gazer · Aether Gazer local private server · Aether Gazer 本地私服 · Aether Gazer ローカルプライベートサーバー**
+
+[![Release](https://img.shields.io/github/v/release/jhon1466/Trimurti?style=flat&color=0d9488&label=release)](https://github.com/jhon1466/Trimurti/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/jhon1466/Trimurti/total?style=flat&color=ca8a04)](https://github.com/jhon1466/Trimurti/releases)
+[![Last commit](https://img.shields.io/github/last-commit/jhon1466/Trimurti?style=flat&color=6366f1)](https://github.com/jhon1466/Trimurti/commits)
+
+![.NET](https://img.shields.io/badge/.NET-10-512BD4?style=flat&logo=dotnet&logoColor=white)
+![C#](https://img.shields.io/badge/C#-server-239120?style=flat)
+![SQLite](https://img.shields.io/badge/SQLite-database-003B57?style=flat&logo=sqlite&logoColor=white)
+![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?style=flat&logo=tauri&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011%20x64-0078D4?style=flat)
+
+<a href="https://github.com/jhon1466/Trimurti/releases/latest"><img src="https://img.shields.io/badge/Trimurti%20GM%20Tools-0d9488?style=flat&logo=github&logoColor=white" alt="Trimurti GM Tools" /></a>
+
 **[Español](#español) · [English](#english) · [中文](#中文) · [日本語](#日本語)**
+
+</div>
 
 ---
 
@@ -68,37 +88,39 @@ dotnet build "src/Trimūrti.Server"
 
 ### Roadmap
 
-✅ funciona · 🟡 parcial · ❌ no disponible
+![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) funciona · ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) parcial · ![No disponible](https://img.shields.io/badge/No%20disponible-ef4444?style=flat-square) no disponible
 
 | Área | Estado | Detalle |
 |---|---|---|
-| Cuentas y login SDK | ✅ | Cuentas locales, login por token, lista de zonas, avisos. |
-| Pantalla de inicio de sesión | ✅ | Todo el estado inicial se genera con datos del jugador y del servidor. |
-| Perfil y personalización | ✅ | Nombre, firma, avatar, marco, tarjeta, burbuja, etiquetas, cumpleaños, música. |
-| Personajes | ✅ | Nivel, ruptura, estrellas, habilidades, astrolabio, skins, confianza, juramento, chips. |
-| Armas, sirvientes y sigils | ✅ | Mejora, ruptura, mejora rápida, encantamientos. |
-| Inventario y objetos | ✅ | Uso de objetos, cofres, conversión de piezas. |
-| Tienda | 🟡 | Tiendas de las tablas del cliente con límites y refrescos. La tienda de skins aparece pero sin artículos. |
-| Gacha | ✅ | Bandas, probabilidad garantizada, selección de UP, historial. |
-| Correo, tareas y logros | 🟡 | Correo, tareas diarias/semanales y la mayoría de logros; faltan algunos logros de estadísticas de combate. |
-| Firmas diarias | 🟡 | Firma de 7 días y acumulativas; la firma mensual necesita su tabla de premios. |
-| Batallas | ✅ | Servidor de batalla UDP local, resultado real, estrellas, botín, barrido. |
-| Capítulos e historia | ✅ | Mapa de capítulos, tesoros, historias. |
-| Dormitorio, comedor e ídolos | 🟡 | Habitaciones, muebles, comedor, encargos, entrenamiento de ídolos, PVE y tablón semanal. Sin PVP de ídolos. |
-| Contenido semanal | ✅ | 梦境再构, 黑区净化, abismo, 迭代校验, 介质攫取, 因果观测, matriz (矩阵), poliedro, RogueTeam, 心象梦魇. |
-| Encantamiento y equipo (combates) | ✅ | Ofertas, refrescos, suit UP, contadores de garantía. |
-| Minijuegos y modos de evento | ✅ | Música, vehicle ball, Kadas, 诡谈夜话, autoajedrez (PVE) y modos de evento de los capítulos. |
-| Actividades temporales | 🟡 | Solo se envían si su actividad está abierta; sorteos, firmas de skin y PT scroll aún sin comandos de juego. |
-| Matriz (矩阵) | 🟡 | Partida completa; los premios por rango de puntos no dan objetos. |
-| Amigos, chat, gremio y cooperativo | ❌ | No hay sistema multijugador. |
-| PVP y clasificaciones | ❌ | No disponible. |
-| Pagos reales | ❌ | Las compras con dinero real no están disponibles. |
-| Otros sistemas del cliente | ❌ | Unos 470 comandos sin implementar (pesca, actividades de gremio, juego de navegación, etc.). |
-| GM Tools | ✅ | Arranque, hosts, TLS, panel GM y actualización automática. |
+| Cuentas y login SDK | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Cuentas locales, login por token, lista de zonas, avisos. |
+| Pantalla de inicio de sesión | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Todo el estado inicial se genera con datos del jugador y del servidor. |
+| Perfil y personalización | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Nombre, firma, avatar, marco, tarjeta, burbuja, etiquetas, cumpleaños, música. |
+| Personajes | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Nivel, ruptura, estrellas, habilidades, astrolabio, skins, confianza, juramento, chips. |
+| Armas, sirvientes y sigils | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Mejora, ruptura, mejora rápida, encantamientos. |
+| Inventario y objetos | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Uso de objetos, cofres, conversión de piezas. |
+| Tienda | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Tiendas de las tablas del cliente con límites y refrescos. La tienda de skins aparece pero sin artículos. |
+| Gacha | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Bandas, probabilidad garantizada, selección de UP, historial. |
+| Correo, tareas y logros | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Correo, tareas diarias/semanales y la mayoría de logros; faltan algunos logros de estadísticas de combate. |
+| Firmas diarias | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Firma de 7 días y acumulativas; la firma mensual necesita su tabla de premios. |
+| Batallas | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Servidor de batalla UDP local, resultado real, estrellas, botín, barrido. |
+| Capítulos e historia | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Mapa de capítulos, tesoros, historias. |
+| Dormitorio, comedor e ídolos | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Habitaciones, muebles, comedor, encargos, entrenamiento de ídolos, PVE y tablón semanal. Sin PVP de ídolos. |
+| Contenido semanal | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | 梦境再构, 黑区净化, abismo, 迭代校验, 介质攫取, 因果观测, matriz (矩阵), poliedro, RogueTeam, 心象梦魇. |
+| Encantamiento y equipo (combates) | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Ofertas, refrescos, suit UP, contadores de garantía. |
+| Minijuegos y modos de evento | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Música, vehicle ball, Kadas, 诡谈夜话, autoajedrez (PVE) y modos de evento de los capítulos. |
+| Actividades temporales | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Solo se envían si su actividad está abierta; sorteos, firmas de skin y PT scroll aún sin comandos de juego. |
+| Matriz (矩阵) | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Partida completa; los premios por rango de puntos no dan objetos. |
+| Amigos, chat, gremio y cooperativo | ![No disponible](https://img.shields.io/badge/No%20disponible-ef4444?style=flat-square) | No hay sistema multijugador. |
+| PVP y clasificaciones | ![No disponible](https://img.shields.io/badge/No%20disponible-ef4444?style=flat-square) | No disponible. |
+| Pagos reales | ![No disponible](https://img.shields.io/badge/No%20disponible-ef4444?style=flat-square) | Las compras con dinero real no están disponibles. |
+| Otros sistemas del cliente | ![No disponible](https://img.shields.io/badge/No%20disponible-ef4444?style=flat-square) | Unos 470 comandos sin implementar (pesca, actividades de gremio, juego de navegación, etc.). |
+| GM Tools | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Arranque, hosts, TLS, panel GM y actualización automática. |
 
 ### Aviso
 
 Proyecto no oficial, sin relación con los desarrolladores ni distribuidores de Aether Gazer. Solo para uso personal y local. No se incluyen archivos del cliente del juego.
+
+---
 
 ---
 
@@ -166,37 +188,39 @@ dotnet build "src/Trimūrti.Server"
 
 ### Roadmap
 
-✅ works · 🟡 partial · ❌ not available
+![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) works · ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) partial · ![Unavailable](https://img.shields.io/badge/Unavailable-ef4444?style=flat-square) not available
 
 | Area | Status | Details |
 |---|---|---|
-| Accounts and SDK login | ✅ | Local accounts, token login, zone list, notices. |
-| Login screen | ✅ | The whole initial state is built from player and server data. |
-| Profile and customization | ✅ | Name, signature, avatar, frame, card, chat bubble, tags, birthday, music. |
-| Characters | ✅ | Level, breakthrough, stars, skills, astrolabe, skins, trust, oath, chips. |
-| Weapons, servants and sigils | ✅ | Upgrade, breakthrough, quick upgrade, enchantments. |
-| Inventory and items | ✅ | Item use, chests, piece conversion. |
-| Shop | 🟡 | Shops from the client tables with limits and refreshes. The skin shop appears but has no goods. |
-| Gacha | ✅ | Banners, pity, UP selection, history. |
-| Mail, tasks and achievements | 🟡 | Mail, daily/weekly tasks and most achievements; some combat-statistics achievements are missing. |
-| Daily sign-in | 🟡 | 7-day and cumulative sign-ins; the monthly sign-in needs its reward table. |
-| Battles | ✅ | Local UDP battle server, real result, stars, drops, sweep. |
-| Chapters and story | ✅ | Chapter map, treasures, stories. |
-| Dorm, canteen and idols | 🟡 | Rooms, furniture, canteen, entrusts, idol training, PVE and weekly board. No idol PVP. |
-| Weekly content | ✅ | 梦境再构, 黑区净化, abyss, 迭代校验, 介质攫取, 因果观测, matrix (矩阵), polyhedron, RogueTeam, 心象梦魇. |
-| Enchantment and equipment battles | ✅ | Offers, refreshes, UP suit, guarantee counters. |
-| Minigames and event modes | ✅ | Music, vehicle ball, Kadas, 诡谈夜话, autochess (PVE) and the chapters' event modes. |
-| Limited-time activities | 🟡 | Sent only while their activity is open; draws, skin sign-ins and PT scroll still lack their gameplay commands. |
-| Matrix (矩阵) | 🟡 | Full run; point-rank rewards give no items. |
-| Friends, chat, guild and co-op | ❌ | No multiplayer system. |
-| PVP and rankings | ❌ | Not available. |
-| Real payments | ❌ | Real-money purchases are not available. |
-| Other client systems | ❌ | About 470 commands not implemented (fishing, guild activities, sailing game, etc.). |
-| GM Tools | ✅ | Startup, hosts, TLS, GM panel and automatic updates. |
+| Accounts and SDK login | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Local accounts, token login, zone list, notices. |
+| Login screen | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | The whole initial state is built from player and server data. |
+| Profile and customization | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Name, signature, avatar, frame, card, chat bubble, tags, birthday, music. |
+| Characters | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Level, breakthrough, stars, skills, astrolabe, skins, trust, oath, chips. |
+| Weapons, servants and sigils | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Upgrade, breakthrough, quick upgrade, enchantments. |
+| Inventory and items | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Item use, chests, piece conversion. |
+| Shop | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | Shops from the client tables with limits and refreshes. The skin shop appears but has no goods. |
+| Gacha | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Banners, pity, UP selection, history. |
+| Mail, tasks and achievements | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | Mail, daily/weekly tasks and most achievements; some combat-statistics achievements are missing. |
+| Daily sign-in | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | 7-day and cumulative sign-ins; the monthly sign-in needs its reward table. |
+| Battles | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Local UDP battle server, real result, stars, drops, sweep. |
+| Chapters and story | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Chapter map, treasures, stories. |
+| Dorm, canteen and idols | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | Rooms, furniture, canteen, entrusts, idol training, PVE and weekly board. No idol PVP. |
+| Weekly content | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | 梦境再构, 黑区净化, abyss, 迭代校验, 介质攫取, 因果观测, matrix (矩阵), polyhedron, RogueTeam, 心象梦魇. |
+| Enchantment and equipment battles | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Offers, refreshes, UP suit, guarantee counters. |
+| Minigames and event modes | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Music, vehicle ball, Kadas, 诡谈夜话, autochess (PVE) and the chapters' event modes. |
+| Limited-time activities | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | Sent only while their activity is open; draws, skin sign-ins and PT scroll still lack their gameplay commands. |
+| Matrix (矩阵) | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | Full run; point-rank rewards give no items. |
+| Friends, chat, guild and co-op | ![Unavailable](https://img.shields.io/badge/Unavailable-ef4444?style=flat-square) | No multiplayer system. |
+| PVP and rankings | ![Unavailable](https://img.shields.io/badge/Unavailable-ef4444?style=flat-square) | Not available. |
+| Real payments | ![Unavailable](https://img.shields.io/badge/Unavailable-ef4444?style=flat-square) | Real-money purchases are not available. |
+| Other client systems | ![Unavailable](https://img.shields.io/badge/Unavailable-ef4444?style=flat-square) | About 470 commands not implemented (fishing, guild activities, sailing game, etc.). |
+| GM Tools | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Startup, hosts, TLS, GM panel and automatic updates. |
 
 ### Notice
 
 Unofficial project, not affiliated with the developers or publishers of Aether Gazer. For personal, local use only. No game client files are included.
+
+---
 
 ---
 
@@ -264,37 +288,39 @@ dotnet build "src/Trimūrti.Server"
 
 ### 路线图
 
-✅ 可用 · 🟡 部分可用 · ❌ 不可用
+![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) 可用 · ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) 部分可用 · ![不可用](https://img.shields.io/badge/不可用-ef4444?style=flat-square) 不可用
 
 | 模块 | 状态 | 说明 |
 |---|---|---|
-| 账号与 SDK 登录 | ✅ | 本地账号、令牌登录、服务器列表、公告。 |
-| 登录流程 | ✅ | 全部初始数据均由玩家与服务器数据生成。 |
-| 个人资料与外观 | ✅ | 昵称、签名、头像、头像框、名片、聊天气泡、标签、生日、音乐。 |
-| 修正者（角色） | ✅ | 等级、突破、星级、技能、星盘、皮肤、信赖、誓约、芯片。 |
-| 武器、钥从与刻印 | ✅ | 强化、突破、快速强化、附魔。 |
-| 背包与道具 | ✅ | 使用道具、宝箱、碎片转换。 |
-| 商店 | 🟡 | 客户端配置表中的商店，含限购与刷新。换装商店可见但没有商品。 |
-| 抽卡 | ✅ | 卡池、保底、UP 选择、记录。 |
-| 邮件、任务与成就 | 🟡 | 邮件、每日/每周任务与大部分成就；部分战斗统计类成就尚未实现。 |
-| 签到 | 🟡 | 七日签到与累计签到；月签到缺少奖励表。 |
-| 战斗 | ✅ | 本地 UDP 战斗服务器、真实结果、星级、掉落、扫荡。 |
-| 章节与剧情 | ✅ | 章节地图、宝箱、剧情。 |
-| 宿舍、餐厅与偶像 | 🟡 | 房间、家具、餐厅、委托、偶像训练、PVE 与每周公告板。暂无偶像 PVP。 |
-| 每周内容 | ✅ | 梦境再构、黑区净化、失序深阱、迭代校验、介质攫取、因果观测、多维变量（矩阵）、多面体、RogueTeam、心象梦魇。 |
-| 附魔战与装备战 | ✅ | 关卡刷新、UP 套装、保底计数。 |
-| 小游戏与活动玩法 | ✅ | 音乐、vehicle ball、Kadas、诡谈夜话、自走棋（PVE）及章节活动玩法。 |
-| 限时活动 | 🟡 | 仅在活动开启时下发；抽取、皮肤签到、PT 卷轴等玩法指令尚未实现。 |
-| 多维变量（矩阵） | 🟡 | 完整流程；积分段位奖励不发放道具。 |
-| 好友、聊天、公会与协作 | ❌ | 无多人系统。 |
-| PVP 与排行榜 | ❌ | 不可用。 |
-| 真实支付 | ❌ | 不支持真实货币购买。 |
-| 其他客户端系统 | ❌ | 约 470 条指令尚未实现（钓鱼、公会活动、航海玩法等）。 |
-| GM Tools | ✅ | 启动、hosts、TLS、GM 面板与自动更新。 |
+| 账号与 SDK 登录 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 本地账号、令牌登录、服务器列表、公告。 |
+| 登录流程 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 全部初始数据均由玩家与服务器数据生成。 |
+| 个人资料与外观 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 昵称、签名、头像、头像框、名片、聊天气泡、标签、生日、音乐。 |
+| 修正者（角色） | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 等级、突破、星级、技能、星盘、皮肤、信赖、誓约、芯片。 |
+| 武器、钥从与刻印 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 强化、突破、快速强化、附魔。 |
+| 背包与道具 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 使用道具、宝箱、碎片转换。 |
+| 商店 | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 客户端配置表中的商店，含限购与刷新。换装商店可见但没有商品。 |
+| 抽卡 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 卡池、保底、UP 选择、记录。 |
+| 邮件、任务与成就 | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 邮件、每日/每周任务与大部分成就；部分战斗统计类成就尚未实现。 |
+| 签到 | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 七日签到与累计签到；月签到缺少奖励表。 |
+| 战斗 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 本地 UDP 战斗服务器、真实结果、星级、掉落、扫荡。 |
+| 章节与剧情 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 章节地图、宝箱、剧情。 |
+| 宿舍、餐厅与偶像 | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 房间、家具、餐厅、委托、偶像训练、PVE 与每周公告板。暂无偶像 PVP。 |
+| 每周内容 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 梦境再构、黑区净化、失序深阱、迭代校验、介质攫取、因果观测、多维变量（矩阵）、多面体、RogueTeam、心象梦魇。 |
+| 附魔战与装备战 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 关卡刷新、UP 套装、保底计数。 |
+| 小游戏与活动玩法 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 音乐、vehicle ball、Kadas、诡谈夜话、自走棋（PVE）及章节活动玩法。 |
+| 限时活动 | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 仅在活动开启时下发；抽取、皮肤签到、PT 卷轴等玩法指令尚未实现。 |
+| 多维变量（矩阵） | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 完整流程；积分段位奖励不发放道具。 |
+| 好友、聊天、公会与协作 | ![不可用](https://img.shields.io/badge/不可用-ef4444?style=flat-square) | 无多人系统。 |
+| PVP 与排行榜 | ![不可用](https://img.shields.io/badge/不可用-ef4444?style=flat-square) | 不可用。 |
+| 真实支付 | ![不可用](https://img.shields.io/badge/不可用-ef4444?style=flat-square) | 不支持真实货币购买。 |
+| 其他客户端系统 | ![不可用](https://img.shields.io/badge/不可用-ef4444?style=flat-square) | 约 470 条指令尚未实现（钓鱼、公会活动、航海玩法等）。 |
+| GM Tools | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 启动、hosts、TLS、GM 面板与自动更新。 |
 
 ### 声明
 
 非官方项目，与深空之眼的开发商及发行商无任何关联。仅供个人本地使用。仓库不包含任何游戏客户端文件。
+
+---
 
 ---
 
@@ -362,33 +388,33 @@ dotnet build "src/Trimūrti.Server"
 
 ### ロードマップ
 
-✅ 動作 · 🟡 一部動作 · ❌ 未対応
+![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) 動作 · ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) 一部動作 · ![未対応](https://img.shields.io/badge/未対応-ef4444?style=flat-square) 未対応
 
 | 項目 | 状態 | 詳細 |
 |---|---|---|
-| アカウントと SDK ログイン | ✅ | ローカルアカウント、トークンログイン、サーバー一覧、お知らせ。 |
-| ログイン処理 | ✅ | 初期データはすべてプレイヤーとサーバーのデータから生成。 |
-| プロフィールとカスタマイズ | ✅ | 名前、署名、アイコン、フレーム、名刺、吹き出し、タグ、誕生日、BGM。 |
-| 修正者（キャラクター） | ✅ | レベル、突破、星、スキル、星盤、スキン、信頼、誓約、チップ。 |
-| 武器・従者・刻印 | ✅ | 強化、突破、一括強化、エンチャント。 |
-| インベントリとアイテム | ✅ | アイテム使用、宝箱、欠片の変換。 |
-| ショップ | 🟡 | クライアントのテーブルにあるショップ（購入制限・更新あり）。スキンショップは表示されるが商品なし。 |
-| ガチャ | ✅ | ピックアップ、天井、UP 選択、履歴。 |
-| メール・タスク・実績 | 🟡 | メール、デイリー/ウィークリータスク、大半の実績。一部の戦闘統計実績は未対応。 |
-| ログインボーナス | 🟡 | 7 日間と累計ログイン。月間ログインは報酬テーブルが必要。 |
-| バトル | ✅ | ローカル UDP バトルサーバー、実際の結果、星、ドロップ、スイープ。 |
-| チャプターとストーリー | ✅ | チャプターマップ、宝箱、ストーリー。 |
-| 寮・食堂・アイドル | 🟡 | 部屋、家具、食堂、依頼、アイドル育成、PVE、週間掲示板。アイドル PVP は未対応。 |
-| ウィークリーコンテンツ | ✅ | 梦境再构、黑区净化、深淵、迭代校验、介质攫取、因果观测、マトリックス（矩阵）、多面体、RogueTeam、心象梦魇。 |
-| エンチャント戦・装備戦 | ✅ | ステージ更新、UP セット、天井カウンター。 |
-| ミニゲームとイベントモード | ✅ | 音楽、vehicle ball、Kadas、诡谈夜话、オートチェス（PVE）、各チャプターのイベントモード。 |
-| 期間限定イベント | 🟡 | イベント開催中のみ送信。抽選、スキンログインボーナス、PT スクロールのゲーム内コマンドは未対応。 |
-| マトリックス（矩阵） | 🟡 | 一連のプレイが可能。ポイント段位報酬はアイテムなし。 |
-| フレンド・チャット・ギルド・協力 | ❌ | マルチプレイ機能なし。 |
-| PVP とランキング | ❌ | 未対応。 |
-| 実際の課金 | ❌ | 実際のお金での購入は不可。 |
-| その他のクライアント機能 | ❌ | 約 470 個のコマンドが未実装（釣り、ギルドイベント、航海ゲームなど）。|
-| GM Tools | ✅ | 起動、hosts、TLS、GM パネル、自動更新。 |
+| アカウントと SDK ログイン | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | ローカルアカウント、トークンログイン、サーバー一覧、お知らせ。 |
+| ログイン処理 | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 初期データはすべてプレイヤーとサーバーのデータから生成。 |
+| プロフィールとカスタマイズ | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 名前、署名、アイコン、フレーム、名刺、吹き出し、タグ、誕生日、BGM。 |
+| 修正者（キャラクター） | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | レベル、突破、星、スキル、星盤、スキン、信頼、誓約、チップ。 |
+| 武器・従者・刻印 | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 強化、突破、一括強化、エンチャント。 |
+| インベントリとアイテム | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | アイテム使用、宝箱、欠片の変換。 |
+| ショップ | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | クライアントのテーブルにあるショップ（購入制限・更新あり）。スキンショップは表示されるが商品なし。 |
+| ガチャ | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | ピックアップ、天井、UP 選択、履歴。 |
+| メール・タスク・実績 | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | メール、デイリー/ウィークリータスク、大半の実績。一部の戦闘統計実績は未対応。 |
+| ログインボーナス | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | 7 日間と累計ログイン。月間ログインは報酬テーブルが必要。 |
+| バトル | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | ローカル UDP バトルサーバー、実際の結果、星、ドロップ、スイープ。 |
+| チャプターとストーリー | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | チャプターマップ、宝箱、ストーリー。 |
+| 寮・食堂・アイドル | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | 部屋、家具、食堂、依頼、アイドル育成、PVE、週間掲示板。アイドル PVP は未対応。 |
+| ウィークリーコンテンツ | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 梦境再构、黑区净化、深淵、迭代校验、介质攫取、因果观测、マトリックス（矩阵）、多面体、RogueTeam、心象梦魇。 |
+| エンチャント戦・装備戦 | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | ステージ更新、UP セット、天井カウンター。 |
+| ミニゲームとイベントモード | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 音楽、vehicle ball、Kadas、诡谈夜话、オートチェス（PVE）、各チャプターのイベントモード。 |
+| 期間限定イベント | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | イベント開催中のみ送信。抽選、スキンログインボーナス、PT スクロールのゲーム内コマンドは未対応。 |
+| マトリックス（矩阵） | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | 一連のプレイが可能。ポイント段位報酬はアイテムなし。 |
+| フレンド・チャット・ギルド・協力 | ![未対応](https://img.shields.io/badge/未対応-ef4444?style=flat-square) | マルチプレイ機能なし。 |
+| PVP とランキング | ![未対応](https://img.shields.io/badge/未対応-ef4444?style=flat-square) | 未対応。 |
+| 実際の課金 | ![未対応](https://img.shields.io/badge/未対応-ef4444?style=flat-square) | 実際のお金での購入は不可。 |
+| その他のクライアント機能 | ![未対応](https://img.shields.io/badge/未対応-ef4444?style=flat-square) | 約 470 個のコマンドが未実装（釣り、ギルドイベント、航海ゲームなど）。|
+| GM Tools | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 起動、hosts、TLS、GM パネル、自動更新。 |
 
 ### 注意事項
 
