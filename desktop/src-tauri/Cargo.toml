@@ -1,6 +1,6 @@
 [package]
 name = "trimurti-gm-tools"
-version = "0.1.0"
+version = "0.2.0"
 description = "Trimurti Aether Gazer Desktop Launcher & GM Tools"
 authors = ["Trimurti"]
 edition = "2021"
