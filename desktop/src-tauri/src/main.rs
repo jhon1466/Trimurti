@@ -5,6 +5,7 @@ use serde_json::Value;
 use tauri::{Manager, RunEvent, State};
 
 mod manager;
+mod updater;
 
 const GM_BASE_URL: &str = "http://127.0.0.1:5180";
 
@@ -53,8 +54,10 @@ fn manager_status(state: State<'_, manager::ManagerState>) -> manager::Status {
 }
 
 #[tauri::command]
-fn manager_start(state: State<'_, manager::ManagerState>) -> Result<String, String> {
-    manager::start_server(&state)
+async fn manager_start(app: tauri::AppHandle) -> Result<String, String> {
+    tauri::async_runtime::spawn_blocking(move || manager::start_server(&app.state::<manager::ManagerState>()))
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -83,6 +86,79 @@ fn manager_save_settings(game_dir: String, workspace_dir: String) -> Result<(), 
 }
 
 #[tauri::command]
+fn manager_set_auto_update(enabled: bool) -> Result<(), String> {
+    let mut s = manager::load_settings();
+    s.auto_update = enabled;
+    manager::save_settings(&s)
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct UpdateInfo {
+    installed: bool,
+    local_commit: String,
+    build_commit: String,
+    remote_commit: String,
+    remote_message: String,
+    update_available: bool,
+    online: bool,
+}
+
+/// Compara el commit instalado con el último de main en GitHub.
+#[tauri::command]
+async fn updater_check() -> Result<UpdateInfo, String> {
+    tauri::async_runtime::spawn_blocking(|| {
+        let root = manager::server_root(&manager::load_settings());
+        let local = updater::source_commit(&root);
+        let installed = updater::is_installed(&root);
+        let built = updater::build_commit(&root);
+        match updater::latest_remote_commit() {
+            Some((remote, message)) => UpdateInfo {
+                update_available: !installed || remote != local || built != remote,
+                installed,
+                local_commit: local,
+                build_commit: built,
+                remote_commit: remote,
+                remote_message: message,
+                online: true,
+            },
+            None => UpdateInfo {
+                update_available: false,
+                installed,
+                local_commit: local,
+                build_commit: built,
+                remote_commit: String::new(),
+                remote_message: String::new(),
+                online: false,
+            },
+        }
+    })
+    .await
+    .map_err(|e| e.to_string())
+}
+
+/// Descarga y compila la última versión; si el servidor estaba activo lo reinicia.
+#[tauri::command]
+async fn updater_apply(app: tauri::AppHandle) -> Result<String, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let state = app.state::<manager::ManagerState>();
+        let was_running = manager::is_running(&state);
+        if was_running {
+            manager::stop_server(&state)?;
+        }
+        let commit = manager::prepare(&state, true)?;
+        let short: String = commit.chars().take(7).collect();
+        if was_running {
+            manager::start_server(&state)?;
+            return Ok(format!("Servidor actualizado a {short} y reiniciado."));
+        }
+        Ok(format!("Servidor actualizado a {short}."))
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 fn manager_open_folder(target: String) -> Result<(), String> {
     manager::open_folder(&target)
 }
@@ -105,6 +181,9 @@ fn main() {
             manager_log_tail,
             manager_save_settings,
             manager_open_folder,
+            manager_set_auto_update,
+            updater_check,
+            updater_apply,
         ])
         .build(tauri::generate_context!())
         .expect("error building Trimurti GM Tools");

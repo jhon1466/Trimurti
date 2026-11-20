@@ -2,7 +2,10 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
-var liveLogPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", "logs", "trimurti-live.log"));
+// TRIMURTI_LOG_DIR: set by Trimūrti GM Tools when it runs the compiled server from its managed folder.
+var liveLogPath = Environment.GetEnvironmentVariable("TRIMURTI_LOG_DIR") is { Length: > 0 } logDir
+    ? Path.GetFullPath(Path.Combine(logDir, "trimurti-live.log"))
+    : Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", "logs", "trimurti-live.log"));
 builder.Logging.AddProvider(new Trimūrti.Server.LiveFileLoggerProvider(liveLogPath));
 builder.WebHost.ConfigureKestrel(options =>
 {

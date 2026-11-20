@@ -50,6 +50,12 @@ const DOMAINS: &[&str] = &[
 pub struct Settings {
     pub game_dir: String,
     pub workspace_dir: String,
+    #[serde(default = "default_true")]
+    pub auto_update: bool,
+}
+
+fn default_true() -> bool {
+    true
 }
 
 impl Default for Settings {
@@ -64,6 +70,7 @@ impl Default for Settings {
                 String::new()
             },
             workspace_dir: appdata_server.to_string_lossy().to_string(),
+            auto_update: true,
         }
     }
 }
@@ -80,16 +87,35 @@ pub struct Status {
     pub busy_ports: Vec<u16>,
     pub server_mode: String,
     pub log_path: String,
+    pub server_dir: String,
+    pub installed: bool,
+    pub built: bool,
+    pub source_commit: String,
+    pub build_commit: String,
+    pub dotnet_ready: bool,
+    /// Paso en curso de la preparación (descarga, .NET, compilación); vacío si no hay ninguno.
+    pub stage: String,
 }
 
 pub struct ManagerState {
     pub child: Mutex<Option<Child>>,
+    pub stage: Mutex<String>,
+    /// Evita dos preparaciones/actualizaciones a la vez.
+    pub busy: Mutex<bool>,
 }
 
 impl ManagerState {
     pub fn new() -> Self {
         Self {
             child: Mutex::new(None),
+            stage: Mutex::new(String::new()),
+            busy: Mutex::new(false),
+        }
+    }
+
+    pub fn set_stage(&self, msg: &str) {
+        if let Ok(mut g) = self.stage.lock() {
+            *g = msg.to_string();
         }
     }
 }
@@ -135,37 +161,6 @@ pub fn save_settings(settings: &Settings) -> Result<(), String> {
     }
     let json = serde_json::to_string_pretty(settings).map_err(|e| e.to_string())?;
     fs::write(&path, json).map_err(|e| format!("No se pudo guardar settings.json: {e}"))
-}
-
-fn detect_workspace_dir() -> Option<PathBuf> {
-    let mut candidates = Vec::new();
-    if let Ok(cwd) = std::env::current_dir() {
-        candidates.push(cwd.clone());
-        if let Some(p) = cwd.parent() {
-            candidates.push(p.to_path_buf());
-        }
-        if let Some(p) = cwd.parent().and_then(|x| x.parent()) {
-            candidates.push(p.to_path_buf());
-        }
-    }
-    if let Ok(exe) = std::env::current_exe() {
-        let mut cur = exe.parent().map(|p| p.to_path_buf());
-        for _ in 0..6 {
-            if let Some(dir) = cur {
-                candidates.push(dir.clone());
-                cur = dir.parent().map(|p| p.to_path_buf());
-            }
-        }
-    }
-
-    for dir in candidates {
-        if dir.join("src").join("Trimūrti.Server").join("Trimūrti.Server.csproj").exists()
-            || dir.join("Trimūrti.Server.exe").exists()
-        {
-            return Some(dir);
-        }
-    }
-    None
 }
 
 fn port_open(port: u16) -> bool {
@@ -240,6 +235,11 @@ pub fn remove_trimurti_hosts() -> Result<(), String> {
 }
 
 fn server_data_dir(ws: &Path) -> PathBuf {
+    ws.join("data")
+}
+
+#[allow(dead_code)]
+fn legacy_server_data_dir(ws: &Path) -> PathBuf {
     let src_data = ws.join("src").join("Trimūrti.Server").join("Data");
     if ws.join("src").join("Trimūrti.Server").exists() {
         return src_data;
@@ -289,55 +289,26 @@ if (-not (Test-Path $pfx) -or -not $existing) {{
     Ok(pfx_path)
 }
 
-fn find_server_launch(ws: &Path) -> Result<(String, Vec<String>, PathBuf, String), String> {
-    let mut search_dirs = vec![ws.to_path_buf()];
-    if let Some(repo) = detect_workspace_dir() {
-        if repo != ws {
-            search_dirs.push(repo);
-        }
+pub fn server_root(settings: &Settings) -> PathBuf {
+    PathBuf::from(&settings.workspace_dir)
+}
+
+pub fn is_running(state: &ManagerState) -> bool {
+    if port_open(5180) {
+        return true;
     }
-    for dir in search_dirs {
-        let direct_exe = dir.join("Trimūrti.Server.exe");
-        if direct_exe.exists() {
-            return Ok((
-                direct_exe.to_string_lossy().to_string(),
-                Vec::new(),
-                dir,
-                "Ejecutable directo".to_string(),
-            ));
-        }
-        let csproj = dir.join("src").join("Trimūrti.Server").join("Trimūrti.Server.csproj");
-        if csproj.exists() {
-            return Ok((
-                "dotnet".to_string(),
-                vec![
-                    "run".to_string(),
-                    "--project".to_string(),
-                    csproj.to_string_lossy().to_string(),
-                ],
-                dir,
-                "dotnet run (.NET 10)".to_string(),
-            ));
-        }
-    }
-    Err(format!(
-        "No se encontró Trimūrti.Server.csproj ni Trimūrti.Server.exe en {}",
-        ws.display()
-    ))
+    state
+        .child
+        .lock()
+        .ok()
+        .and_then(|mut g| g.as_mut().map(|c| matches!(c.try_wait(), Ok(None))))
+        .unwrap_or(false)
 }
 
 pub fn get_status(state: &ManagerState) -> Status {
     let settings = load_settings();
-    let ws = PathBuf::from(&settings.workspace_dir);
-    let mut running = port_open(5180);
-    if let Ok(mut guard) = state.child.lock() {
-        if let Some(child) = guard.as_mut() {
-            match child.try_wait() {
-                Ok(None) => running = true,
-                _ => *guard = None,
-            }
-        }
-    }
+    let ws = server_root(&settings);
+    let running = is_running(state);
 
     let mut busy_ports = Vec::new();
     if !running {
@@ -348,38 +319,69 @@ pub fn get_status(state: &ManagerState) -> Status {
         }
     }
 
-    let pfx_exists = server_data_dir(&ws).join("trimurti-local.pfx").exists();
+    let installed = crate::updater::is_installed(&ws);
+    let built = crate::updater::is_built(&ws);
+    let build_commit = crate::updater::build_commit(&ws);
+    let server_mode = if built {
+        format!("Compilado ({})", build_commit.chars().take(7).collect::<String>())
+    } else if installed {
+        "Pendiente de compilar".to_string()
+    } else {
+        "No instalado".to_string()
+    };
     let game_found = !settings.game_dir.trim().is_empty()
         && Path::new(&settings.game_dir).join("AetherGazer.exe").exists();
-    let (_, _, _, server_mode) = find_server_launch(&ws)
-        .unwrap_or_else(|_| (String::new(), Vec::new(), ws.clone(), "No encontrado".into()));
-    let log_path = ws.join("logs").join("trimurti-live.log");
 
     Status {
         app_version: env!("CARGO_PKG_VERSION").to_string(),
+        cert_ready: server_data_dir(&ws).join("trimurti-local.pfx").exists(),
+        log_path: ws.join("logs").join("trimurti-live.log").to_string_lossy().to_string(),
+        server_dir: ws.to_string_lossy().to_string(),
+        source_commit: crate::updater::source_commit(&ws),
+        dotnet_ready: crate::updater::dotnet_exe().is_file(),
+        stage: state.stage.lock().map(|g| g.clone()).unwrap_or_default(),
         settings,
         server_running: running,
         hosts_active: check_hosts_active(),
-        cert_ready: pfx_exists,
         game_found,
         busy_ports,
         server_mode,
-        log_path: log_path.to_string_lossy().to_string(),
+        installed,
+        built,
+        build_commit,
     }
+}
+
+/// Descarga/compila lo que haga falta (ver updater::prepare). `force_check` consulta GitHub aunque haya versión.
+pub fn prepare(state: &ManagerState, force_check: bool) -> Result<String, String> {
+    {
+        let mut busy = state.busy.lock().map_err(|_| "Estado bloqueado")?;
+        if *busy {
+            return Err("Ya hay una preparación en curso.".to_string());
+        }
+        *busy = true;
+    }
+    let ws = server_root(&load_settings());
+    let result = crate::updater::prepare(&ws, force_check, &|msg| state.set_stage(msg));
+    state.set_stage("");
+    if let Ok(mut busy) = state.busy.lock() {
+        *busy = false;
+    }
+    result
 }
 
 pub fn start_server(state: &ManagerState) -> Result<String, String> {
     let settings = load_settings();
-    let ws = PathBuf::from(&settings.workspace_dir);
-    if !ws.exists() {
-        return Err("La carpeta del servidor (workspace) no existe.".to_string());
-    }
+    let ws = server_root(&settings);
+    fs::create_dir_all(&ws).map_err(|e| format!("No se pudo crear la carpeta del servidor: {e}"))?;
 
     if port_open(5180) {
         add_trimurti_hosts()?;
         return Ok("El servidor ya estaba activo; hosts verificado.".to_string());
     }
 
+    let commit = prepare(state, false)?;
+    state.set_stage("Iniciando el servidor…");
     let pfx = ensure_local_cert(&ws)?;
     add_trimurti_hosts()?;
 
@@ -394,29 +396,37 @@ pub fn start_server(state: &ManagerState) -> Result<String, String> {
         }
     }
 
-    let (program, args, cwd, mode) = find_server_launch(&ws)?;
-    let mut cmd = Command::new(&program);
-    cmd.args(&args)
-        .current_dir(&cwd)
+    let app = crate::updater::app_dir(&ws);
+    let data = server_data_dir(&ws);
+    let logs = ws.join("logs");
+    let _ = fs::create_dir_all(&data);
+    let _ = fs::create_dir_all(&logs);
+    let mut cmd = Command::new(crate::updater::dotnet_exe());
+    cmd.arg(app.join(crate::updater::SERVER_DLL))
+        .current_dir(&app)
         .env("TRIMURTI_HTTP_PORT", "80")
         .env("TRIMURTI_HTTPS_PORT", "443")
         .env("TRIMURTI_CERT_PFX", pfx.to_string_lossy().to_string())
         .env("TRIMURTI_CERT_PASSWORD", "trimurti")
+        .env("TRIMURTI_DB_PATH", data.join("trimurti.db"))
+        .env("TRIMURTI_LOG_DIR", &logs)
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null());
+    crate::updater::dotnet_env(&mut cmd);
     #[cfg(windows)]
     cmd.creation_flags(CREATE_NO_WINDOW);
 
-    let child = cmd
-        .spawn()
-        .map_err(|e| format!("No se pudo iniciar Trimūrti.Server ({mode}): {e}"))?;
-
+    let child = cmd.spawn().map_err(|e| format!("No se pudo iniciar el servidor: {e}"));
+    state.set_stage("");
+    let child = child?;
     if let Ok(mut guard) = state.child.lock() {
         *guard = Some(child);
     }
-
-    Ok(format!("Servidor iniciado ({mode}) con hosts y TLS activos."))
+    Ok(format!(
+        "Servidor iniciado (versión {}) con hosts y TLS activos.",
+        commit.chars().take(7).collect::<String>()
+    ))
 }
 
 pub fn stop_server(state: &ManagerState) -> Result<String, String> {
@@ -457,9 +467,7 @@ pub fn launch_game() -> Result<String, String> {
 
 pub fn read_log_tail(lines: usize) -> String {
     let settings = load_settings();
-    let log_file = PathBuf::from(&settings.workspace_dir)
-        .join("logs")
-        .join("trimurti-live.log");
+    let log_file = server_root(&settings).join("logs").join("trimurti-live.log");
     match fs::read_to_string(&log_file) {
         Ok(content) => {
             let all: Vec<&str> = content.lines().collect();
@@ -472,7 +480,7 @@ pub fn read_log_tail(lines: usize) -> String {
 
 pub fn open_folder(target: &str) -> Result<(), String> {
     let settings = load_settings();
-    let ws = PathBuf::from(&settings.workspace_dir);
+    let ws = server_root(&settings);
     let path = match target {
         "logs" => ws.join("logs"),
         "game" => PathBuf::from(&settings.game_dir),

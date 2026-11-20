@@ -4,7 +4,7 @@ import { translations, type Language } from '../i18n';
 
 export type ServerStatus = {
   appVersion: string;
-  settings: { gameDir: string; workspaceDir: string };
+  settings: { gameDir: string; workspaceDir: string; autoUpdate: boolean };
   serverRunning: boolean;
   hostsActive: boolean;
   certReady: boolean;
@@ -12,7 +12,26 @@ export type ServerStatus = {
   busyPorts: number[];
   serverMode: string;
   logPath: string;
+  serverDir: string;
+  installed: boolean;
+  built: boolean;
+  sourceCommit: string;
+  buildCommit: string;
+  dotnetReady: boolean;
+  stage: string;
 };
+
+type UpdateInfo = {
+  installed: boolean;
+  localCommit: string;
+  buildCommit: string;
+  remoteCommit: string;
+  remoteMessage: string;
+  updateAvailable: boolean;
+  online: boolean;
+};
+
+const UPDATE_EVERY_MS = 10 * 60 * 1000;
 
 export default function ServerPanel(props: {
   language: Language;
@@ -26,7 +45,45 @@ export default function ServerPanel(props: {
   const [log, setLog] = createSignal('');
   const [gameDir, setGameDir] = createSignal('');
   const [workspaceDir, setWorkspaceDir] = createSignal('');
+  const [update, setUpdate] = createSignal<UpdateInfo>();
+  const [updating, setUpdating] = createSignal(false);
+  const [checkedAt, setCheckedAt] = createSignal('');
   let timer: number | undefined;
+  let updateTimer: number | undefined;
+
+  const short = (sha?: string) => (sha ? sha.slice(0, 7) : '—');
+  const busy = () => working() || updating() || !!status()?.stage;
+
+  async function checkUpdate(silent = false) {
+    try {
+      const info = await invoke<UpdateInfo>('updater_check');
+      setUpdate(info);
+      setCheckedAt(new Date().toLocaleTimeString());
+      // Auto-update only an installed server; the first download happens on "Start all".
+      if (info.online && info.installed && info.updateAvailable && status()?.settings.autoUpdate && !busy()) await applyUpdate();
+    } catch (e) {
+      if (!silent) props.notify(String(e), true);
+    }
+  }
+
+  async function applyUpdate() {
+    setUpdating(true);
+    try {
+      props.notify(await invoke<string>('updater_apply'));
+    } catch (e) {
+      props.notify(String(e), true);
+    } finally {
+      setUpdating(false);
+      await refresh();
+      await checkUpdate(true);
+    }
+  }
+
+  async function setAutoUpdate(enabled: boolean) {
+    await invoke('manager_set_auto_update', { enabled });
+    await refresh();
+    if (enabled) await checkUpdate(true);
+  }
 
   async function refresh() {
     try {
@@ -59,6 +116,7 @@ export default function ServerPanel(props: {
     runAction(async () => {
       const msg = await invoke<string>('manager_start');
       window.setTimeout(props.onStarted, 3000);
+      void checkUpdate(true);
       return msg;
     });
 
@@ -85,11 +143,13 @@ export default function ServerPanel(props: {
   }
 
   onMount(() => {
-    void refresh();
+    void refresh().then(() => checkUpdate(true));
     timer = window.setInterval(() => void refresh(), 2500);
+    updateTimer = window.setInterval(() => void checkUpdate(true), UPDATE_EVERY_MS);
   });
   onCleanup(() => {
     if (timer) window.clearInterval(timer);
+    if (updateTimer) window.clearInterval(updateTimer);
   });
 
   return (
@@ -118,12 +178,12 @@ export default function ServerPanel(props: {
             <Show
               when={status()?.serverRunning}
               fallback={
-                <button class="primary-button" disabled={working()} onClick={start}>
+                <button class="primary-button" disabled={busy()} onClick={start}>
                   <i class="fa-solid fa-play" /> {t('startAll')}
                 </button>
               }
             >
-              <button class="danger-button" disabled={working()} onClick={stop}>
+              <button class="danger-button" disabled={busy()} onClick={stop}>
                 <i class="fa-solid fa-stop" /> {t('stopAll')}
               </button>
             </Show>
@@ -184,6 +244,83 @@ export default function ServerPanel(props: {
           <button class="secondary-button" disabled={working()} onClick={savePaths}>
             <i class="fa-solid fa-floppy-disk" /> {t('savePaths')}
           </button>
+        </div>
+      </div>
+
+      <div class="surface-card p-5 flex flex-col gap-3">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="card-title">{t('updTitle')}</h3>
+            <p class="card-caption">
+              {t('srvDirInUse')}: {status()?.serverDir ?? '...'}
+            </p>
+          </div>
+          <span
+            class={`tiny-chip ${update()?.online && update()?.installed && !update()?.updateAvailable ? '' : update()?.online ? 'gold' : 'muted'}`}
+          >
+            <i
+              class={`fa-solid ${
+                !update() ? 'fa-circle-question' : !update()!.online ? 'fa-plug-circle-xmark' : update()!.installed && !update()!.updateAvailable ? 'fa-circle-check' : 'fa-circle-arrow-up'
+              }`}
+            />{' '}
+            {!update()
+              ? `${t('updCheck')}…`
+              : !update()!.online
+                ? t('updOffline')
+                : !update()!.installed
+                  ? t('updNotInstalled')
+                  : update()!.updateAvailable
+                    ? t('updAvailable')
+                    : t('updLatest')}
+          </span>
+        </div>
+
+        <p class="text-[11px] text-ice-500">{t('updHint')}</p>
+
+        <Show when={status()?.stage}>
+          <div class="rounded-lg border border-sky-500/40 bg-sky-950/30 px-3 py-2 text-xs text-sky-200 flex items-center gap-2">
+            <i class="fa-solid fa-spinner fa-spin" />
+            <span>{status()?.stage}</span>
+          </div>
+        </Show>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-ice-300">
+          <div>
+            {t('updLocal')}: <span class="font-mono text-ice-100">{short(status()?.sourceCommit)}</span>
+          </div>
+          <div>
+            {t('updBuilt')}: <span class="font-mono text-ice-100">{short(status()?.buildCommit)}</span>
+          </div>
+          <div>
+            {t('updRemote')}: <span class="font-mono text-ice-100">{short(update()?.remoteCommit)}</span>
+          </div>
+          <div class="md:col-span-3 text-ice-500">
+            {update()?.remoteMessage ? `${update()!.remoteMessage} · ` : ''}
+            {status()?.dotnetReady ? t('dotnetReady') : t('dotnetMissing')} · {t('updChecked')}: {checkedAt() || '—'}
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex flex-wrap gap-2">
+            <button class="secondary-button" disabled={busy()} onClick={() => void checkUpdate()}>
+              <i class="fa-solid fa-magnifying-glass" /> {t('updCheck')}
+            </button>
+            <button
+              class="primary-button"
+              disabled={busy() || !update()?.online || !update()?.updateAvailable}
+              onClick={() => void applyUpdate()}
+            >
+              <i class={`fa-solid ${updating() ? 'fa-spinner fa-spin' : 'fa-download'}`} /> {updating() ? t('updWorking') : t('updApply')}
+            </button>
+          </div>
+          <label class="flex items-center gap-2 text-xs text-ice-300 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={status()?.settings.autoUpdate ?? true}
+              onChange={(e) => void setAutoUpdate(e.currentTarget.checked)}
+            />
+            {t('updAuto')}
+          </label>
         </div>
       </div>
 

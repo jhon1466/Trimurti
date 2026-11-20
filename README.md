@@ -19,7 +19,7 @@ Trimūrti es un servidor privado local para **Aether Gazer** (cliente de PC, ver
 | Iniciar todo | Crea e instala el certificado TLS local, añade la redirección de hosts y arranca el servidor. |
 | Detener | Detiene el servidor y restaura el archivo `hosts` tal como estaba. |
 | Abrir Aether Gazer | Lanza el juego instalado desde la carpeta configurada. |
-| Actualizaciones | Comprueba si hay commits nuevos en este repositorio, descarga la actualización, conserva tu base de datos y reinicia el servidor. Puede hacerlo automáticamente. |
+| Actualizaciones | Comprueba si hay commits nuevos en este repositorio; si los hay, descarga el código, lo compila con su .NET privado, conserva tu base de datos y reinicia el servidor. Muestra si ya usas la última versión y puede hacerlo automáticamente. |
 | Panel GM | Cuentas, modificadores (personajes), objetos y correo del jugador. |
 | Registro en vivo | Muestra `logs/trimurti-live.log` y copia un diagnóstico al portapapeles. |
 | Idiomas | Español, English, 中文 y 日本語. |
@@ -27,8 +27,7 @@ Trimūrti es un servidor privado local para **Aether Gazer** (cliente de PC, ver
 ### Requisitos
 
 - Windows 10/11 de 64 bits.
-- [.NET 10 SDK](https://dotnet.microsoft.com/download).
-- [Git](https://git-scm.com/) (recomendado; sin él, GM Tools descarga las actualizaciones en ZIP).
+- Conexión a internet la primera vez. No hace falta instalar .NET ni Git: GM Tools descarga el servidor y un .NET privado (verificado con el hash oficial de Microsoft) en `%LOCALAPPDATA%\TrimurtiGMTools`.
 - Aether Gazer para PC instalado (por defecto en `C:\Program Files\AetherGazerLauncher\AetherGazer`).
 - Ejecutar GM Tools **como administrador** (necesario para el archivo `hosts` y el certificado).
 - Puertos libres: 80, 443, 5180 (HTTP/HTTPS/API GM), 8102, 8105 (TCP del juego) y 6105 (UDP de batalla).
@@ -37,7 +36,7 @@ Trimūrti es un servidor privado local para **Aether Gazer** (cliente de PC, ver
 
 1. Descarga o compila Trimūrti GM Tools (ver *Compilar GM Tools*).
 2. Ábrelo como administrador.
-3. En la pestaña **Servidor**, indica la carpeta del juego y la carpeta del servidor. Si la carpeta del servidor está vacía, GM Tools descarga el servidor de este repositorio.
+3. En la pestaña **Servidor**, indica la carpeta del juego. La carpeta del servidor por defecto es `%APPDATA%\TrimurtiGMTools\server`; la primera vez GM Tools descarga y compila el servidor ahí (tarda unos minutos).
 4. Pulsa **Iniciar todo** y espera a que aparezca *SERVIDOR ACTIVO*.
 5. Pulsa **Abrir Aether Gazer** e inicia sesión con una cuenta local.
 6. Al terminar, pulsa **Detener** para restaurar el archivo `hosts`.
@@ -56,8 +55,8 @@ El ejecutable queda en `desktop/src-tauri/target/release/trimurti-gm-tools.exe`.
 
 ### Datos y copias de seguridad
 
-- Base de datos: `src/Trimūrti.Server/bin/Debug/net10.0/Data/trimurti.db` dentro de la carpeta del servidor (o la ruta de `TRIMURTI_DB_PATH`).
-- Registro: `logs/trimurti-live.log`.
+- Base de datos: `data\trimurti.db` dentro de la carpeta del servidor.
+- Registros: `logs\trimurti-live.log` (servidor) y `logs\build.log` (última compilación).
 - Ajustes del operador (sistemas abiertos, anuncios, contenido oculto…): `src/Trimūrti.Server/Data/Configs/server_settings.json`.
 - Las actualizaciones nunca sobrescriben la base de datos ni los registros. Aun así, copia `trimurti.db*` antes de cambios importantes.
 
@@ -118,7 +117,7 @@ Trimūrti is a local private server for **Aether Gazer** (PC client, resource ve
 | Start all | Creates and installs the local TLS certificate, adds the hosts redirect and starts the server. |
 | Stop | Stops the server and restores the `hosts` file as it was. |
 | Open Aether Gazer | Launches the installed game from the configured folder. |
-| Updates | Checks this repository for new commits, downloads the update, keeps your database and restarts the server. Can do it automatically. |
+| Updates | Checks this repository for new commits; when there are any, downloads the code, compiles it with its private .NET, keeps your database and restarts the server. Shows whether you are on the latest version and can do it automatically. |
 | GM panel | Player accounts, modifiers (characters), items and mail. |
 | Live log | Shows `logs/trimurti-live.log` and copies a diagnostic to the clipboard. |
 | Languages | Español, English, 中文 and 日本語. |
@@ -126,8 +125,7 @@ Trimūrti is a local private server for **Aether Gazer** (PC client, resource ve
 ### Requirements
 
 - 64-bit Windows 10/11.
-- [.NET 10 SDK](https://dotnet.microsoft.com/download).
-- [Git](https://git-scm.com/) (recommended; without it GM Tools downloads updates as a ZIP).
+- Internet connection the first time. You do not need to install .NET or Git: GM Tools downloads the server and a private .NET (verified against Microsoft's official hash) into `%LOCALAPPDATA%\TrimurtiGMTools`.
 - Aether Gazer for PC installed (default `C:\Program Files\AetherGazerLauncher\AetherGazer`).
 - Run GM Tools **as administrator** (required for the `hosts` file and the certificate).
 - Free ports: 80, 443, 5180 (HTTP/HTTPS/GM API), 8102, 8105 (game TCP) and 6105 (battle UDP).
@@ -136,7 +134,7 @@ Trimūrti is a local private server for **Aether Gazer** (PC client, resource ve
 
 1. Download or build Trimūrti GM Tools (see *Building GM Tools*).
 2. Open it as administrator.
-3. In the **Server** tab, set the game folder and the server folder. If the server folder is empty, GM Tools downloads the server from this repository.
+3. In the **Server** tab, set the game folder. The default server folder is `%APPDATA%\TrimurtiGMTools\server`; the first time, GM Tools downloads and compiles the server there (it takes a few minutes).
 4. Press **Start all** and wait for *SERVER ONLINE*.
 5. Press **Open Aether Gazer** and sign in with a local account.
 6. When done, press **Stop** to restore the `hosts` file.
@@ -155,8 +153,8 @@ The executable is written to `desktop/src-tauri/target/release/trimurti-gm-tools
 
 ### Data and backups
 
-- Database: `src/Trimūrti.Server/bin/Debug/net10.0/Data/trimurti.db` inside the server folder (or the `TRIMURTI_DB_PATH` path).
-- Log: `logs/trimurti-live.log`.
+- Database: `data\trimurti.db` inside the server folder.
+- Logs: `logs\trimurti-live.log` (server) and `logs\build.log` (last build).
 - Operator settings (open systems, announcements, hidden content…): `src/Trimūrti.Server/Data/Configs/server_settings.json`.
 - Updates never overwrite the database or the logs. Still, copy `trimurti.db*` before major changes.
 
@@ -217,7 +215,7 @@ Trimūrti 是 **深空之眼（Aether Gazer）** 的本地私人服务器（PC �
 | 全部启动 | 生成并安装本地 TLS 证书，添加 hosts 重定向并启动服务器。 |
 | 停止 | 停止服务器，并将 `hosts` 文件恢复原状。 |
 | 启动深空之眼 | 从设置的目录启动已安装的游戏。 |
-| 更新 | 检查本仓库是否有新提交，下载更新，保留数据库并重启服务器。可设为自动更新。 |
+| 更新 | 检查本仓库是否有新提交；如有，则下载代码、使用专用 .NET 编译、保留数据库并重启服务器。会显示是否已是最新版本，可设为自动更新。 |
 | GM 面板 | 玩家账号、修正者（角色）、道具与邮件。 |
 | 实时日志 | 显示 `logs/trimurti-live.log`，并可复制诊断信息到剪贴板。 |
 | 语言 | Español、English、中文、日本語。 |
@@ -225,8 +223,7 @@ Trimūrti 是 **深空之眼（Aether Gazer）** 的本地私人服务器（PC �
 ### 运行要求
 
 - 64 位 Windows 10/11。
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)。
-- [Git](https://git-scm.com/)（推荐；没有 Git 时 GM Tools 以 ZIP 方式下载更新）。
+- 首次运行需要联网。无需安装 .NET 或 Git：GM Tools 会将服务器和专用 .NET（使用微软官方哈希校验）下载到 `%LOCALAPPDATA%\TrimurtiGMTools`。
 - 已安装 PC 版深空之眼（默认 `C:\Program Files\AetherGazerLauncher\AetherGazer`）。
 - 以 **管理员身份** 运行 GM Tools（修改 `hosts` 文件和安装证书需要）。
 - 需要空闲端口：80、443、5180（HTTP/HTTPS/GM API），8102、8105（游戏 TCP），6105（战斗 UDP）。
@@ -235,7 +232,7 @@ Trimūrti 是 **深空之眼（Aether Gazer）** 的本地私人服务器（PC �
 
 1. 下载或编译 Trimūrti GM Tools（见“编译 GM Tools”）。
 2. 以管理员身份运行。
-3. 在 **服务器** 页面设置游戏目录和服务器目录。若服务器目录为空，GM Tools 会从本仓库下载服务器。
+3. 在 **服务器** 页面设置游戏目录。服务器目录默认为 `%APPDATA%\TrimurtiGMTools\server`；首次运行时 GM Tools 会在此下载并编译服务器（需要几分钟）。
 4. 点击 **全部启动**，等待显示“服务器运行中”。
 5. 点击 **启动深空之眼**，使用本地账号登录。
 6. 结束后点击 **停止**，恢复 `hosts` 文件。
@@ -254,8 +251,8 @@ npm run tauri:build
 
 ### 数据与备份
 
-- 数据库：服务器目录下的 `src/Trimūrti.Server/bin/Debug/net10.0/Data/trimurti.db`（或 `TRIMURTI_DB_PATH` 指定的路径）。
-- 日志：`logs/trimurti-live.log`。
+- 数据库：服务器目录下的 `data\trimurti.db`。
+- 日志：`logs\trimurti-live.log`（服务器）与 `logs\build.log`（最近一次编译）。
 - 运营设置（开放系统、公告、隐藏内容等）：`src/Trimūrti.Server/Data/Configs/server_settings.json`。
 - 更新不会覆盖数据库和日志。重大改动前仍建议备份 `trimurti.db*`。
 
@@ -316,7 +313,7 @@ Trimūrti は **Aether Gazer（深空之眼）** の PC クライアント（リ
 | すべて起動 | ローカル TLS 証明書を作成・インストールし、hosts リダイレクトを追加してサーバーを起動します。 |
 | 停止 | サーバーを停止し、`hosts` ファイルを元に戻します。 |
 | Aether Gazer を起動 | 設定したフォルダからインストール済みのゲームを起動します。 |
-| アップデート | このリポジトリの新しいコミットを確認し、データベースを保持したまま更新してサーバーを再起動します。自動更新も可能です。 |
+| アップデート | このリポジトリの新しいコミットを確認し、ある場合はコードをダウンロードして専用の .NET でコンパイルし、データベースを保持したままサーバーを再起動します。最新版かどうかを表示し、自動更新も可能です。 |
 | GM パネル | プレイヤーアカウント、修正者（キャラクター）、アイテム、メール。 |
 | ライブログ | `logs/trimurti-live.log` を表示し、診断情報をクリップボードにコピーします。 |
 | 言語 | Español、English、中文、日本語。 |
@@ -324,8 +321,7 @@ Trimūrti は **Aether Gazer（深空之眼）** の PC クライアント（リ
 ### 動作環境
 
 - 64 ビット版 Windows 10/11。
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)。
-- [Git](https://git-scm.com/)（推奨。ない場合、GM Tools は ZIP で更新をダウンロードします）。
+- 初回のみインターネット接続が必要です。.NET や Git のインストールは不要です。GM Tools がサーバーと専用の .NET（Microsoft 公式ハッシュで検証）を `%LOCALAPPDATA%\TrimurtiGMTools` にダウンロードします。
 - PC 版 Aether Gazer がインストールされていること（既定は `C:\Program Files\AetherGazerLauncher\AetherGazer`）。
 - GM Tools を **管理者として** 実行すること（`hosts` ファイルと証明書の操作に必要）。
 - 空きポート：80、443、5180（HTTP/HTTPS/GM API）、8102、8105（ゲーム TCP）、6105（バトル UDP）。
@@ -334,7 +330,7 @@ Trimūrti は **Aether Gazer（深空之眼）** の PC クライアント（リ
 
 1. Trimūrti GM Tools をダウンロードまたはビルドします（「GM Tools のビルド」を参照）。
 2. 管理者として起動します。
-3. **サーバー** タブでゲームフォルダとサーバーフォルダを設定します。サーバーフォルダが空の場合、GM Tools がこのリポジトリからサーバーをダウンロードします。
+3. **サーバー** タブでゲームフォルダを設定します。サーバーフォルダの既定は `%APPDATA%\TrimurtiGMTools\server` で、初回は GM Tools がそこにサーバーをダウンロードしてコンパイルします（数分かかります）。
 4. **すべて起動** を押し、「稼働中」と表示されるまで待ちます。
 5. **Aether Gazer を起動** を押し、ローカルアカウントでログインします。
 6. 終了したら **停止** を押して `hosts` ファイルを元に戻します。
@@ -353,8 +349,8 @@ npm run tauri:build
 
 ### データとバックアップ
 
-- データベース：サーバーフォルダ内の `src/Trimūrti.Server/bin/Debug/net10.0/Data/trimurti.db`（または `TRIMURTI_DB_PATH` で指定したパス）。
-- ログ：`logs/trimurti-live.log`。
+- データベース：サーバーフォルダ内の `data\trimurti.db`。
+- ログ：`logs\trimurti-live.log`（サーバー）と `logs\build.log`（直近のコンパイル）。
 - 運営設定（開放システム、お知らせ、非表示コンテンツなど）：`src/Trimūrti.Server/Data/Configs/server_settings.json`。
 - アップデートはデータベースとログを上書きしません。それでも大きな変更の前には `trimurti.db*` をバックアップしてください。
 
