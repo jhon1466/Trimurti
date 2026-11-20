@@ -157,7 +157,6 @@ fn detect_workspace_dir() -> Option<PathBuf> {
             }
         }
     }
-    candidates.push(PathBuf::from(r"e:\Documentos\aethergazerPS"));
 
     for dir in candidates {
         if dir.join("src").join("Trimūrti.Server").join("Trimūrti.Server.csproj").exists()
