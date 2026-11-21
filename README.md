@@ -17,8 +17,27 @@
 ![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011%20x64-0078D4?style=flat)
 
 <a href="https://github.com/jhon1466/Trimurti/releases/latest"><img src="https://img.shields.io/badge/Trimurti%20GM%20Tools-0d9488?style=flat&logo=github&logoColor=white" alt="Trimurti GM Tools" /></a>
+<a href="https://discord.gg/sfPVdxpv98"><img src="https://img.shields.io/badge/Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Discord" /></a>
 
 **[Español](#español) · [English](#english) · [中文](#中文) · [日本語](#日本語)**
+
+</div>
+
+---
+
+## 💬 Comunidad · Community · 社区 · コミュニティ
+
+<div align="center">
+
+<a href="https://discord.gg/sfPVdxpv98"><img src="https://img.shields.io/badge/Discord-%C3%9Anete%20%C2%B7%20Join%20%C2%B7%20%E5%8A%A0%E5%85%A5%20%C2%B7%20%E5%8F%82%E5%8A%A0-5865F2?style=for-the-badge&logo=discord&logoColor=white&labelColor=404EED" alt="Discord" height="40" /></a>
+
+¿Dudas, errores o ideas? Únete al **servidor de Discord**: ahí se anuncian las novedades, se reportan fallos y se ayuda con la instalación.
+
+Questions, bugs or ideas? Join the **Discord server**: news are announced there, bugs get reported and you can get help with the setup.
+
+有疑问、发现问题或有建议？欢迎加入 **Discord 服务器**：这里会发布更新公告、反馈问题，并提供安装帮助。
+
+質問・不具合・アイデアがあれば **Discord サーバー** へどうぞ。最新情報の告知、不具合の報告、導入のサポートを行っています。
 
 </div>
 
