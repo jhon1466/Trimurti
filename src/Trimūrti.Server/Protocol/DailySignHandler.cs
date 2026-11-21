@@ -1,6 +1,8 @@
+using Trimūrti.Server.Protocol.Handlers;
+
 namespace Trimūrti.Server.Protocol;
 
-/// <summary>Ports the source's daily activity 3 claim (cs_11010 → sc_11011).</summary>
+/// <summary>Ports the source's daily activity 3 claim (cs_11010 → sc_11011) with live inventory sync.</summary>
 public sealed class DailySignHandler(GameAccountRepository accounts, SourceGameConfig config, ProtoCodec codec) : IGameCommandHandler
 {
     public uint Command => 11010;
@@ -11,13 +13,25 @@ public sealed class DailySignHandler(GameAccountRepository accounts, SourceGameC
         if (activityId is 0 or 3 or 10001)
         {
             var daily = await accounts.ClaimDailySignAsync(request.AccountId, cancellationToken);
-            return [Reply(request, 11011, ToPayload(daily))];
+            return await ReplyWithSyncAsync(request, daily, cancellationToken);
         }
         if (activityId < 0 || activityId > int.MaxValue)
             return [Reply(request, 11011, new Dictionary<string, object?> { ["result"] = 2, ["item_list"] = Array.Empty<object>() })];
 
         var result = await accounts.ClaimCumulativeSignAsync(request.AccountId, (int)activityId, config, cancellationToken);
-        return [Reply(request, 11011, ToPayload(result))];
+        return await ReplyWithSyncAsync(request, result, cancellationToken);
+    }
+
+    private async Task<IReadOnlyList<GameResponse>> ReplyWithSyncAsync(GameRequest request, DailySignResult result, CancellationToken ct)
+    {
+        var touched = result.Rewards is { Count: > 0 } rewards
+            ? rewards.Select(x => x.ItemId)
+            : result.ItemId > 0 ? [result.ItemId] : Array.Empty<long>();
+        var frames = result.Success && !result.AlreadySigned
+            ? await InventorySync.FramesAsync(accounts, codec, request, touched, ct)
+            : [];
+        frames.Add(Reply(request, 11011, ToPayload(result)));
+        return frames;
     }
 
     private static IReadOnlyDictionary<string, object?> ToPayload(DailySignResult result)

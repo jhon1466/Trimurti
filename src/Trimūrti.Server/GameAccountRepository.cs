@@ -246,6 +246,15 @@ public sealed partial class GameAccountRepository
         finally { _writeGate.Release(); }
     }
 
+    private static readonly (long ItemId, long Count)[] MonthlySignRewards =
+    [
+        (2, 10000), (40103, 5), (2, 15000), (40203, 5), (20002, 1), (40803, 5), (1, 100),
+        (2, 15000), (40503, 5), (40103, 6), (2, 20000), (40203, 6), (20002, 1), (1, 100),
+        (40803, 6), (2, 20000), (40603, 5), (40103, 8), (2, 25000), (20002, 2), (1, 150),
+        (40203, 8), (2, 25000), (40803, 8), (40503, 8), (2, 30000), (20002, 2), (1, 150),
+        (40603, 8), (1, 200), (1, 200)
+    ];
+
     /// <summary>Claims daily activity 3 using the source server's 05:00 game-day boundary.</summary>
     public async Task<DailySignResult> ClaimDailySignAsync(long uid, CancellationToken cancellationToken = default)
     {
@@ -302,9 +311,8 @@ public sealed partial class GameAccountRepository
                 await using var reader = await reward.ExecuteReaderAsync(cancellationToken);
                 if (!await reader.ReadAsync(cancellationToken))
                 {
-                    // Alpha Persei's _sign_reward falls back to item 1 × 100 when its monthly table is unpopulated.
-                    itemId = 1;
-                    itemCount = 100;
+                    var idx = Math.Clamp(signCount, 0, MonthlySignRewards.Length - 1);
+                    (itemId, itemCount) = MonthlySignRewards[idx];
                 }
                 else
                 {

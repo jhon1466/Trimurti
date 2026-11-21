@@ -362,6 +362,9 @@ public static class StageSettleFlow
         // 连携奥义 progress: wins fought by both combo heroes.
         if (!sweep && await new RelationSystem(accounts, config, codec).BattleWinAsync(request.AccountId, (ushort)(request.ServerIndex + 1), heroes.ToHashSet(), (int)times, cancellationToken) is { } comboPush)
             pushes.Add(comboPush);
+        // Combat & stage-clear achievements (100001..100008, 1010, 120024..120029 + state reconcile).
+        if (!sweep && await new AchievementSystem(accounts, config, codec).BattleWinAsync(request.AccountId, (ushort)(request.ServerIndex + 1), stageId, (int)times, heroes, stats, cancellationToken) is { } achDiff)
+            pushes.Add(achDiff);
         var battleResult = new Dictionary<string, object?>
         {
             ["battle_id"] = battleId == 0 ? 1UL : battleId,

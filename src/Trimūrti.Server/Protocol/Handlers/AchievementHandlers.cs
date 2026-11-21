@@ -25,6 +25,7 @@ public sealed class AchievementSystem(GameAccountRepository accounts, SourceGame
     {
         public Dictionary<long, Rec> Items { get; set; } = [];
         public Dictionary<int, long> Counters { get; set; } = [];
+        public Dictionary<string, long> ParamCounters { get; set; } = [];
         public long LoginDay { get; set; }
         public long LoginDays { get; set; }
         public List<uint> Stories { get; set; } = [];
@@ -91,6 +92,9 @@ public sealed class AchievementSystem(GameAccountRepository accounts, SourceGame
             2004 => home?.Dorms.Count(d => d.Key >= 6) ?? 0,
             2006 => home?.Given.Values.Sum() ?? 0,
             80001 or 80002 or 80003 or 80004 or 80005 => p.Count > 0 && s.Counters.GetValueOrDefault(cond) >= p[0] ? 1 : 0,
+            100004 => p.Count > 0 && (chapters.Any(c => c.Id == p[0] && c.ClearTimes > 0) || s.ParamCounters.GetValueOrDefault($"100004:{p[0]}") > 0) ? 1 : 0,
+            100002 => p.Count > 0 && p[0] > 0 ? s.ParamCounters.GetValueOrDefault($"100002:{p[0]}") : s.Counters.GetValueOrDefault(100002),
+            100001 or 100006 or 100008 or 1010 or 120024 or 120026 or 120027 or 120028 or 120029 => s.Counters.GetValueOrDefault(cond),
             204 or 205 or 211 or 2002 or 2003 or 2005 or 700 or 780 => s.Counters.GetValueOrDefault(cond),
             _ => null
         };
@@ -119,6 +123,54 @@ public sealed class AchievementSystem(GameAccountRepository accounts, SourceGame
         var s = await RawAsync(uid, ct) ?? new State();
         if (condition is >= 80001 and <= 80005) s.Counters[condition] = Math.Max(s.Counters.GetValueOrDefault(condition), delta);
         else s.Counters[condition] = s.Counters.GetValueOrDefault(condition) + delta;
+        var changed = await ReconcileAsync(uid, s, ct);
+        await SaveAsync(uid, s, ct);
+        return changed.Count == 0 ? null : new GameResponse(53003, 0, srv, codec.Encode("sc_53003", new Dictionary<string, object?> { ["achievement_progress"] = changed.ToArray() }));
+    }
+
+    /// <summary>Updates battle-report &amp; team-composition combat achievements after a non-sweep win and returns the 53003 diff.</summary>
+    public async Task<GameResponse?> BattleWinAsync(long uid, ushort srv, long stageId, int times, IReadOnlyList<long> teamHeroes, BattleStats stats, CancellationToken ct)
+    {
+        var s = await RawAsync(uid, ct) ?? new State();
+        void Inc(int cond, long delta = 1) => s.Counters[cond] = s.Counters.GetValueOrDefault(cond) + delta;
+        void IncParam(int cond, long param, long delta = 1)
+        {
+            var k = $"{cond}:{param}";
+            s.ParamCounters[k] = s.ParamCounters.GetValueOrDefault(k) + delta;
+        }
+
+        if (stageId > 0) IncParam(100004, stageId);
+        if (stageId is >= 101000 and < 102000) Inc(1010, times);
+        if (stats.InjuredNum == 0 && stats.HittedNum == 0)
+        {
+            Inc(100001);
+            Inc(100002);
+            if (stageId > 0) IncParam(100002, stageId);
+        }
+        if (stats.BattleTimeMs > 0 && stats.BattleTimeMs <= 10_000) Inc(100006);
+        if (teamHeroes.Count >= 3 && stats.DeadNum == 2) Inc(100008);
+        if (teamHeroes.Count == 1) Inc(120024, times);
+
+        if (teamHeroes.Count > 0)
+        {
+            var login = await accounts.GetInitialLoginStateAsync(uid, ct);
+            var heroMap = (login?.Heroes ?? []).ToDictionary(h => h.Id, h => h);
+            var heroCfg = config.Get("hero_cfg.json");
+            var trustCfg = config.Get("trust_cfg.json");
+            int RaceOf(long id) => heroCfg is { } hc && hc.GetProperty("heroes").TryGetProperty(id.ToString(), out var h) ? h.GetProperty("race").GetInt32() : 0;
+            long ArchiveOf(long id) => trustCfg is { } tc && tc.GetProperty("hero_to_archive").TryGetProperty(id.ToString(), out var a) ? a.GetInt64() : id;
+
+            if (teamHeroes.Any(id => heroMap.TryGetValue(id, out var h) && h.UnlockedAstrolabe.Count >= 9)) Inc(120028);
+            if (teamHeroes.Count == 3)
+            {
+                var races = teamHeroes.Select(RaceOf).Distinct().ToList();
+                if (races.Count == 1 && races[0] > 0) Inc(120026, times);
+                if (teamHeroes.All(id => heroMap.TryGetValue(id, out var h) && h.Star >= 600)) Inc(120027, times);
+                var archs = teamHeroes.Select(ArchiveOf).Distinct().ToList();
+                if (archs.Count == 1 && archs[0] > 0) Inc(120029, times);
+            }
+        }
+
         var changed = await ReconcileAsync(uid, s, ct);
         await SaveAsync(uid, s, ct);
         return changed.Count == 0 ? null : new GameResponse(53003, 0, srv, codec.Encode("sc_53003", new Dictionary<string, object?> { ["achievement_progress"] = changed.ToArray() }));

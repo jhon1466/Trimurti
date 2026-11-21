@@ -175,8 +175,8 @@ dotnet build "src/Trimūrti.Server"
 | Inventario y objetos | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Uso de objetos, cofres, conversión de piezas. |
 | Tienda | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Todas las tiendas de recursos con límites y refrescos, además de las tiendas de skins (15, 16 y 17) con compra en moneda del juego. |
 | Gacha | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Bandas, probabilidad garantizada, selección de UP, historial. |
-| Correo, tareas y logros | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Correo, tareas diarias/semanales y la mayoría de logros; faltan algunos logros de estadísticas de combate. |
-| Firmas diarias | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Firma de 7 días y acumulativas; la firma mensual necesita su tabla de premios. |
+| Correo, tareas y logros | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Correo, tareas diarias/semanales y logros (incluyendo estadísticas de combate y composición de equipo). |
+| Firmas diarias | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Firma mensual de 31 días con tabla de premios, firma de 7 días y firmas acumulativas con sincronización en vivo. |
 | Batallas | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Servidor de batalla UDP local, resultado real, estrellas, botín, barrido. |
 | Capítulos e historia | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Mapa de capítulos, tesoros, historias. |
 | Dormitorio, comedor e ídolos | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Habitaciones, muebles, comedor, encargos, entrenamiento de ídolos, PVE y tablón semanal. Sin PVP de ídolos. |
@@ -275,8 +275,8 @@ dotnet build "src/Trimūrti.Server"
 | Inventory and items | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Item use, chests, piece conversion. |
 | Shop | ![Works](https://img.shields.io/badge/Works-22c55e?style=flat-square) | All resource shops with limits and refreshes, plus the skin shops (15, 16, and 17) purchasable with in-game currency. |
 | Gacha | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Banners, pity, UP selection, history. |
-| Mail, tasks and achievements | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | Mail, daily/weekly tasks and most achievements; some combat-statistics achievements are missing. |
-| Daily sign-in | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | 7-day and cumulative sign-ins; the monthly sign-in needs its reward table. |
+| Mail, tasks and achievements | ![Works](https://img.shields.io/badge/Works-22c55e?style=flat-square) | Mail, daily/weekly tasks and achievements (including battle statistics and team composition). |
+| Daily sign-in | ![Works](https://img.shields.io/badge/Works-22c55e?style=flat-square) | 31-day monthly sign-in reward table, 7-day sign-in and cumulative sign-ins with live inventory sync. |
 | Battles | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Local UDP battle server, real result, stars, drops, sweep. |
 | Chapters and story | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Chapter map, treasures, stories. |
 | Dorm, canteen and idols | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | Rooms, furniture, canteen, entrusts, idol training, PVE and weekly board. No idol PVP. |
@@ -375,8 +375,8 @@ dotnet build "src/Trimūrti.Server"
 | 背包与道具 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 使用道具、宝箱、碎片转换。 |
 | 商店 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 全部资源商店（含限购与刷新）以及换装商店（15、16、17），支持使用游戏内货币购买皮肤。 |
 | 抽卡 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 卡池、保底、UP 选择、记录。 |
-| 邮件、任务与成就 | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 邮件、每日/每周任务与大部分成就；部分战斗统计类成就尚未实现。 |
-| 签到 | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 七日签到与累计签到；月签到缺少奖励表。 |
+| 邮件、任务与成就 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 邮件、每日/每周任务与成就（包含战斗统计与编队成就）。 |
+| 签到 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 31 天月签到奖励表、七日签到与累计签到，领取后实时同步背包。 |
 | 战斗 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 本地 UDP 战斗服务器、真实结果、星级、掉落、扫荡。 |
 | 章节与剧情 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 章节地图、宝箱、剧情。 |
 | 宿舍、餐厅与偶像 | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 房间、家具、餐厅、委托、偶像训练、PVE 与每周公告板。暂无偶像 PVP。 |
@@ -475,8 +475,8 @@ dotnet build "src/Trimūrti.Server"
 | インベントリとアイテム | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | アイテム使用、宝箱、欠片の変換。 |
 | ショップ | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 全リソースショップ（購入制限・更新あり）およびスキンショップ（15・16・17）に対応し、ゲーム内通貨で購入可能。 |
 | ガチャ | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | ピックアップ、天井、UP 選択、履歴。 |
-| メール・タスク・実績 | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | メール、デイリー/ウィークリータスク、大半の実績。一部の戦闘統計実績は未対応。 |
-| ログインボーナス | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | 7 日間と累計ログイン。月間ログインは報酬テーブルが必要。 |
+| メール・タスク・実績 | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | メール、デイリー/ウィークリータスク、実績（戦闘統計・編成実績を含む）。 |
+| ログインボーナス | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 31 日間の月間ログイン報酬テーブル、7 日間および累計ログイン（即時同期対応）。 |
 | バトル | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | ローカル UDP バトルサーバー、実際の結果、星、ドロップ、スイープ。 |
 | チャプターとストーリー | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | チャプターマップ、宝箱、ストーリー。 |
 | 寮・食堂・アイドル | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | 部屋、家具、食堂、依頼、アイドル育成、PVE、週間掲示板。アイドル PVP は未対応。 |
