@@ -15,8 +15,10 @@
 ![SQLite](https://img.shields.io/badge/SQLite-database-003B57?style=flat&logo=sqlite&logoColor=white)
 ![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?style=flat&logo=tauri&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011%20x64-0078D4?style=flat)
+![CN Client Only](https://img.shields.io/badge/Client-CN%20Only%20(PC)-e11d48?style=flat)
 
 <a href="https://github.com/jhon1466/Trimurti/releases/latest"><img src="https://img.shields.io/badge/Trimurti%20GM%20Tools-0d9488?style=flat&logo=github&logoColor=white" alt="Trimurti GM Tools" /></a>
+<a href="https://drive.google.com/file/d/1PTs2Ezr3bgx4O2z_Z-_uqq6ceMyNHw7p/view?usp=sharing"><img src="https://img.shields.io/badge/CN%20Client%20(PC)-Google%20Drive-4285F4?style=flat&logo=googledrive&logoColor=white" alt="CN Client (PC)" /></a>
 <a href="https://discord.gg/sfPVdxpv98"><img src="https://img.shields.io/badge/Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Discord" /></a>
 
 **[Español](#español) · [English](#english) · [中文](#中文) · [日本語](#日本語)**
@@ -43,11 +45,29 @@ Questions, bugs or ideas? Join the **Discord server**: news are announced there,
 
 ---
 
+## 📦 Cliente chino (CN) · Chinese Client (CN) · 国服客户端（CN）· 中国版クライアント（CN）
+
+<div align="center">
+
+<a href="https://drive.google.com/file/d/1PTs2Ezr3bgx4O2z_Z-_uqq6ceMyNHw7p/view?usp=sharing"><img src="https://img.shields.io/badge/Google%20Drive-Descargar%20%C2%B7%20Download%20%C2%B7%20%E4%B8%8B%E8%BD%BD%20%C2%B7%20%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89-4285F4?style=for-the-badge&logo=googledrive&logoColor=white&labelColor=1967D2" alt="Descargar Cliente Chino (CN) - Google Drive" height="40" /></a>
+
+**Solo compatible con el cliente chino (CN) de PC** (no funciona con la versión Global). Descomprime el archivo y selecciona la carpeta del juego en **Trimūrti GM Tools**.
+
+**Compatible with the Chinese (CN) PC client only** (not compatible with the Global version). Extract the archive and select the game folder in **Trimūrti GM Tools**.
+
+**仅兼容国服（CN）PC 客户端**（不支持国际服版本）。解压压缩包后，在 **Trimūrti GM Tools** 中选择游戏目录即可。
+
+**中国版（CN）PC クライアント専用**（グローバル版には非対応です）。アーカイブを展開し、**Trimūrti GM Tools** でゲームフォルダを選択してください。
+
+</div>
+
+---
+
 ## Español
 
 ### ¿Qué es Trimūrti?
 
-Trimūrti es un servidor privado local para **Aether Gazer** (cliente de PC, versiones de recursos 5.2.1–5.3.1), escrito en **.NET 10**. Todo el estado del jugador se guarda en una base de datos SQLite local y las reglas del juego se calculan con las tablas de configuración del propio cliente.
+Trimūrti es un servidor privado local **exclusivamente para el cliente chino (CN) de PC de Aether Gazer** (versiones de recursos 5.2.1–5.3.1; no compatible con Global), escrito en **.NET 10**. Todo el estado del jugador se guarda en una base de datos SQLite local y las reglas del juego se calculan con las tablas de configuración del propio cliente.
 
 > **Importante:** el servidor se usa a través de **Trimūrti GM Tools** (carpeta [`desktop/`](desktop)). Esta aplicación de escritorio prepara el certificado TLS local, redirige temporalmente los dominios del juego a tu equipo, arranca y detiene el servidor, abre el juego, mantiene el servidor actualizado con este repositorio e incluye el panel GM. No hace falta ejecutar el servidor a mano.
 
@@ -147,7 +167,7 @@ Proyecto no oficial, sin relación con los desarrolladores ni distribuidores de 
 
 ### What is Trimūrti?
 
-Trimūrti is a local private server for **Aether Gazer** (PC client, resource versions 5.2.1–5.3.1) written in **.NET 10**. All player state lives in a local SQLite database, and game rules are computed from the client's own configuration tables.
+Trimūrti is a local private server **exclusively for the Chinese (CN) PC client of Aether Gazer** (resource versions 5.2.1–5.3.1; not compatible with Global) written in **.NET 10**. All player state lives in a local SQLite database, and game rules are computed from the client's own configuration tables.
 
 > **Important:** the server is used through **Trimūrti GM Tools** (the [`desktop/`](desktop) folder). This desktop app prepares the local TLS certificate, temporarily redirects the game domains to your machine, starts and stops the server, launches the game, keeps the server up to date with this repository and includes the GM panel. You do not need to run the server by hand.
 
@@ -247,7 +267,7 @@ Unofficial project, not affiliated with the developers or publishers of Aether G
 
 ### Trimūrti 是什么？
 
-Trimūrti 是 **深空之眼（Aether Gazer）** 的本地私人服务器（PC 客户端，资源版本 5.2.1–5.3.1），使用 **.NET 10** 编写。所有玩家数据保存在本地 SQLite 数据库中，游戏规则依据客户端自身的配置表计算。
+Trimūrti 是 **仅支持深空之眼（Aether Gazer）国服（CN）PC 客户端**（资源版本 5.2.1–5.3.1；不支持国际服）的本地私人服务器，使用 **.NET 10** 编写。所有玩家数据保存在本地 SQLite 数据库中，游戏规则依据客户端自身的配置表计算。
 
 > **重要：** 服务器通过 **Trimūrti GM Tools**（[`desktop/`](desktop) 目录）使用。该桌面程序会准备本地 TLS 证书、临时将游戏域名重定向到本机、启动和停止服务器、启动游戏、根据本仓库自动更新服务器，并内置 GM 面板。无需手动运行服务器。
 
@@ -347,7 +367,7 @@ dotnet build "src/Trimūrti.Server"
 
 ### Trimūrti とは
 
-Trimūrti は **Aether Gazer（深空之眼）** の PC クライアント（リソースバージョン 5.2.1–5.3.1）向けローカルプライベートサーバーで、**.NET 10** で書かれています。プレイヤーのデータはすべてローカルの SQLite データベースに保存され、ゲームのルールはクライアント自身の設定テーブルに基づいて計算されます。
+Trimūrti は **Aether Gazer（深空之眼）中国版（CN）PC クライアント専用**（リソースバージョン 5.2.1–5.3.1、グローバル版非対応）のローカルプライベートサーバーで、**.NET 10** で書かれています。プレイヤーのデータはすべてローカルの SQLite データベースに保存され、ゲームのルールはクライアント自身の設定テーブルに基づいて計算されます。
 
 > **重要：** サーバーは **Trimūrti GM Tools**（[`desktop/`](desktop) フォルダ）を通して使用します。このデスクトップアプリはローカル TLS 証明書の準備、ゲームドメインの一時的なリダイレクト、サーバーの起動と停止、ゲームの起動、このリポジトリに基づくサーバーの自動更新を行い、GM パネルも備えています。サーバーを手動で実行する必要はありません。
 
