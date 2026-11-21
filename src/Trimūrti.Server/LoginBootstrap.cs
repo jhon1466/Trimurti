@@ -278,15 +278,7 @@ public sealed class LoginBootstrap(GameAccountRepository accounts, ProtoCodec co
                 ["icon_frame_list"] = sourceConfig.GetDecorationIds("FRAME").Append((uint)(lobby.CurIconFrame > 0 ? lobby.CurIconFrame : 2001)).Distinct()
                     .Select(id => (object)new Dictionary<string, object?> { ["id"] = id, ["lasted_time"] = 0u, ["obtain_time"] = (uint)now }).ToArray(),
                 ["icon_frame"] = (uint)(lobby.CurIconFrame > 0 ? lobby.CurIconFrame : 2001),
-                ["sticker_show_info"] = new object[]
-                {
-                    new Dictionary<string, object?>
-                    {
-                        ["page_id"] = 1u,
-                        ["foreground"] = 0u,
-                        ["sticker_display_info"] = Array.Empty<object>()
-                    }
-                },
+                ["sticker_show_info"] = await Trimūrti.Server.Protocol.Handlers.StickerWallPrefs.BuildStickerShowInfoAsync(accounts, uid, cancellationToken),
                 ["sticker_background"] = (uint)(lobby.CurStickerBg > 0 ? lobby.CurStickerBg : 4002),
                 ["all_background_list"] = sourceConfig.GetDecorationIds("STICKER_BG").Append((uint)(lobby.CurStickerBg > 0 ? lobby.CurStickerBg : 4002)).Distinct().ToArray(),
                 ["all_sticker_list"] = sourceConfig.GetDecorationIds("STICKER").ToArray(),
@@ -304,25 +296,7 @@ public sealed class LoginBootstrap(GameAccountRepository accounts, ProtoCodec co
                 ["chat_bubble"] = (uint)(lobby.CurChatBubble > 0 ? lobby.CurChatBubble : 9001),
                 ["chat_bubble_list"] = sourceConfig.GetDecorationIds("CHAT_BUBBLE").Append((uint)(lobby.CurChatBubble > 0 ? lobby.CurChatBubble : 9001)).Distinct()
                     .Select(id => (object)new Dictionary<string, object?> { ["id"] = id, ["lasted_time"] = 0u, ["obtain_time"] = (uint)now }).ToArray(),
-                ["random_info"] = new object[]
-                {
-                    new Dictionary<string, object?>
-                    {
-                        ["random_type"] = 1u,
-                        ["random_model"] = 0u,
-                        ["show_hero_dressing_scene"] = 1u,
-                        ["routine_hero_dressing_scene"] = 1u,
-                        ["random_list"] = new uint[] { (uint)(lobby.BoardHero > 0 ? lobby.BoardHero : 1084) }
-                    },
-                    new Dictionary<string, object?>
-                    {
-                        ["random_type"] = 2u,
-                        ["random_model"] = 0u,
-                        ["show_hero_dressing_scene"] = 1u,
-                        ["routine_hero_dressing_scene"] = 1u,
-                        ["random_list"] = new uint[] { (uint)(lobby.CurScene > 0 ? lobby.CurScene : 6000) }
-                    }
-                },
+                ["random_info"] = await Trimūrti.Server.Protocol.Handlers.LobbyRandomPrefs.BuildRandomInfoAsync(accounts, uid, lobby.BoardHero, lobby.CurScene, cancellationToken),
                 ["all_foreground_list"] = Array.Empty<uint>(),
                 ["info_list"] = Array.Empty<object>(),
                 ["admitted_suit_reaward_list"] = Array.Empty<object>(),

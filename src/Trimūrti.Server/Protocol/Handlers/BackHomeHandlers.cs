@@ -25,6 +25,7 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
     private const long Coin = 39;
     private const double GuestSeconds = 56.0, MealFatigue = 0.05;
     private const int EarningsCap = 14000, NaturalCap = 120, FedCap = 140;
+    private const int RhythmGameCost = 10, RhythmGameReward = 500, RhythmGameDailyCap = 1000;
     private static readonly (long Exp, double Mult)[] Levels = [(48000, 1.50), (33000, 1.40), (21000, 1.35), (12000, 1.30), (6000, 1.25), (3000, 1.20), (1800, 1.15), (1000, 1.10), (400, 1.05), (0, 1.00)];
     private static readonly Dictionary<int, double> Quality = new() { [1] = 0.5, [2] = 0.7, [3] = 1.0, [4] = 1.2, [5] = 1.3 };
     private static readonly long[] DefaultTasks = [1, 20001, 30001, 20003];
@@ -35,7 +36,7 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
     private static void Need(bool ok, uint code) { if (!ok) throw new Fail(code); }
 
     // ---------- state ----------
-    public sealed class Hero { public double Fatigue { get; set; } = FedCap; public long Ts { get; set; } public int FeedTimes { get; set; } public int TotalFeed { get; set; } public long FeedDay { get; set; } public int Lock { get; set; } public long Skin { get; set; } }
+    public sealed class Hero { public double Fatigue { get; set; } = NaturalCap; public long Ts { get; set; } public int FeedTimes { get; set; } public int TotalFeed { get; set; } public long FeedDay { get; set; } public int Lock { get; set; } public long Skin { get; set; } }
     public sealed class FurPos { public uint F { get; set; } public int X { get; set; } public int Y { get; set; } public int R { get; set; } }
     public sealed class FurList { public uint Type { get; set; } public uint Suit { get; set; } public List<FurPos> Pos { get; set; } = []; }
     public sealed class Dorm { public int Pos { get; set; } public long Exp { get; set; } public int Liked { get; set; } public int Visited { get; set; } public List<long> Archives { get; set; } = []; public Dictionary<long, long> Gifts { get; set; } = []; public List<FurList> Layout { get; set; } = []; }
@@ -85,6 +86,9 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
         public List<long> Attack { get; set; } = [];
         public List<long> Defend { get; set; } = [];
         public int TrainTimes { get; set; }
+        public long TrainDay { get; set; }
+        public int DailyGameCurrency { get; set; }
+        public long DailyGameDay { get; set; }
         public Dictionary<long, PveRec> Pve { get; set; } = [];
         public List<int> RankGot { get; set; } = [];
         public Dictionary<uint, Dance> Dances { get; set; } = [];
@@ -131,6 +135,8 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
         }
         foreach (var h in s.Heroes.Values.Where(h => h.FeedDay != Day)) { h.FeedTimes = 0; h.FeedDay = Day; }
         if (s.LikeDay != Day) { s.LikeDay = Day; s.LikedToday.Clear(); }
+        if (s.TrainDay != Day) { s.TrainDay = Day; s.TrainTimes = 0; }
+        if (s.DailyGameDay != Day) { s.DailyGameDay = Day; s.DailyGameCurrency = 0; }
         return s;
     }
 
@@ -310,7 +316,7 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
             ["ingredients"] = ing,
             ["theatrical_list"] = s.Theatre.OrderBy(t => t.Key).Select(t => (object)new Dictionary<string, object?> { ["id"] = (uint)t.Key, ["timestamp_list"] = t.Value.Select(x => (uint)x).ToArray() }).ToArray(),
             ["hero_setting"] = s.Heroes.Where(h => h.Value.Skin != 0).OrderBy(h => h.Key).Select(h => (object)new Dictionary<string, object?> { ["hero_id"] = (uint)h.Key, ["skin_id"] = (uint)h.Value.Skin }).ToArray(),
-            ["daily_game_currency_num"] = await accounts.HasClaimAsync(uid, "backhome_rhythm", Day.ToString(), ct) ? 1000u : 0u,
+            ["daily_game_currency_num"] = (uint)Math.Clamp(s.DailyGameCurrency, 0, RhythmGameDailyCap),
             ["exhibition_id"] = 5u,
             ["furnitures"] = fur,
             ["backhome_suit_id_list"] = Array.Empty<uint>(),
@@ -618,7 +624,9 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
                             fed.Add(a);
                         }
                         Require(fed.Count > 0, "Nobody can eat now");
-                        reply["fatigue_list"] = Fatigues(s, fed);
+                        var fedFatigues = Fatigues(s, fed);
+                        reply["fatigue_list"] = fedFatigues;
+                        pushes.Add(new GameResponse(58027, 0, srv, codec.Encode("sc_58027", new Dictionary<string, object?> { ["fatigue_list"] = fedFatigues })));
                         foreach (var a in fed) await accounts.AddHeroArchiveExpAsync(uid, a, 50, ct);
                         task = t => tasks.Trigger(t, 2003, fed.Count);
                         break;
@@ -907,13 +915,18 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
                         Require(owned.Contains(a), "Hero not owned");
                         var h = s.Heroes[a];
                         var rewards = new List<(long, long)>();
-                        if (await accounts.TryClaimAsync(uid, "backhome_rhythm", Day.ToString(), ct))
+                        var remaining = Math.Max(0, RhythmGameDailyCap - s.DailyGameCurrency);
+                        if (remaining > 0)
                         {
+                            Need(h.Fatigue >= RhythmGameCost, 210168);
                             var was = h.Fatigue;
-                            h.Fatigue = Math.Max(0, h.Fatigue - 10);
+                            h.Fatigue = Math.Max(0, h.Fatigue - RhythmGameCost);
                             AddFatigue(s, a, was - h.Fatigue);
-                            rewards.Add((Coin, 1000));
+                            var gain = Math.Min(RhythmGameReward, remaining);
+                            s.DailyGameCurrency += gain;
+                            rewards.Add((Coin, gain));
                             grants.AddRange(rewards);
+                            pushes.Add(new GameResponse(58027, 0, srv, codec.Encode("sc_58027", new Dictionary<string, object?> { ["fatigue_list"] = Fatigues(s, [a]) })));
                         }
                         reply["reward_list"] = Items(rewards);
                         reply["fatigue"] = F(h.Fatigue);
@@ -928,6 +941,8 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
                         var idx = (int)G(b, "attribute_index");
                         var a = Arch(hero);
                         Require(owned.Contains(a) && IdolUsable(hero) && idx is >= 1 and <= 5, "Bad training");
+                        var limit = (uint)Math.Clamp(s.Dorms.Keys.Count(id => id >= 6) + 4, 6, 10);
+                        Need(s.TrainTimes < limit, 210264);
                         var h = s.Heroes[a];
                         var attrs = IdolAttributes(s, hero);
                         var max = (uint)(Get("heroes", hero) ?? Get("heroes", a))!.Value.GetProperty("idol_base_attribute")[idx - 1][1].GetInt64();
@@ -944,6 +959,7 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
                         reply["fatigue"] = F(h.Fatigue);
                         reply["attribute_value"] = attrs[idx - 1];
                         task = t => { var c = tasks.Trigger(t, 2009); c.AddRange(tasks.Trigger(t, 2017, 1, idx)); return c; };
+                        pushes.Add(new GameResponse(58027, 0, srv, codec.Encode("sc_58027", new Dictionary<string, object?> { ["fatigue_list"] = Fatigues(s, [a]) })));
                         pushes.Add(new GameResponse(58171, 0, srv, codec.Encode("sc_58171", new Dictionary<string, object?> { ["exercise_times_info"] = ((Dictionary<string, object?>)IdolOverview(s))["exercise_times_info"] })));
                         break;
                     }
@@ -1074,6 +1090,57 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
                 case 58160:
                 case 58184:
                     throw new ModeError("No opponents on a private server");
+                // ----- idol DIY dance sharing & collection (58204-58216) -----
+                case 58204:
+                    reply["uid"] = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    break;
+                case 58206:
+                case 58208:
+                    save = false;
+                    break;
+                case 58210:
+                    reply["be_collected_num"] = 1u;
+                    save = false;
+                    break;
+                case 58212:
+                    reply["own_today_liked_num"] = 0u;
+                    reply["base_sequence"] = new Dictionary<string, object?> { ["id"] = 0u, ["name"] = "", ["music_id"] = 0u, ["action_list"] = Array.Empty<uint>(), ["scene_id"] = 0u };
+                    reply["be_collected_num"] = 0u;
+                    reply["be_liked_num"] = 0u;
+                    reply["be_viewed_num"] = 1u;
+                    save = false;
+                    break;
+                case 58214:
+                    reply["sequence_brief_list"] = Array.Empty<object>();
+                    reply["user_brief_list"] = Array.Empty<object>();
+                    save = false;
+                    break;
+                case 58216:
+                    reply["sequence_statistics_list"] = Array.Empty<object>();
+                    save = false;
+                    break;
+                // ----- dorm link game (65210-65214) -----
+                case 65210:
+                    save = false;
+                    break;
+                case 65212:
+                {
+                    var rid = G(b, "reward_id");
+                    if (rid > 0 && await accounts.TryClaimAsync(uid, "dorm_link_reward", rid.ToString(), ct))
+                        grants.Add((1, 30));
+                    reply["reward_list"] = HandlerHelpers.ToItemNetRecList(grants);
+                    save = false;
+                    break;
+                }
+                case 65214:
+                {
+                    foreach (var rid in HandlerHelpers.ReadIdList(b, "reward_id").Where(x => x > 0).Distinct())
+                        if (await accounts.TryClaimAsync(uid, "dorm_link_reward", rid.ToString(), ct))
+                            grants.Add((1, 30));
+                    reply["reward_list"] = HandlerHelpers.ToItemNetRecList(grants);
+                    save = false;
+                    break;
+                }
             }
         }
         catch (ModeError) { return [HandlerHelpers.ResultOnly(codec, r, cmd + 1, 2)]; }
@@ -1095,7 +1162,7 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
                 if (Arch(form) == trustArch && await oath.AdvanceAsync(uid, srv, form, 410001, 1, ct) is { } of) pushes.Add(of);
         }
         var frames = await InventorySync.FramesAsync(accounts, codec, r, costs.Concat(grants).Select(x => x.Item1).Distinct(), ct);
-        if (cmd is 58130 or 58132 or 58134 or 58136 or 58146 or 58104 or 58114 or 58116 or 58106 or 58018 or 58100 or 58102 or 58024 or 58012 or 58126 or 58218)
+        if (cmd is 58130 or 58132 or 58134 or 58136 or 58138 or 58146 or 58104 or 58114 or 58116 or 58106 or 58018 or 58100 or 58102 or 58024 or 58012 or 58126 or 58128 or 58154 or 58158 or 58166 or 58218)
             frames.Add(new GameResponse(58001, 0, srv, codec.Encode("sc_58001", await ConciseAsync(uid, s, ct))));
         frames.AddRange(pushes);
         if (task is not null && await tasks.EventAsync(uid, srv, task, ct) is { } diff) frames.Add(diff);
@@ -1110,6 +1177,8 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
     [
         58002, 58010, 58012, 58018, 58024, 58040, 58050, 58052, 58054, 58056, 58058, 58060, 58100, 58102, 58104, 58106, 58108,
         58114, 58116, 58120, 58126, 58128, 58130, 58132, 58134, 58136, 58138, 58142, 58144, 58146, 58148, 58152, 58154, 58158,
-        58160, 58164, 58166, 58174, 58176, 58178, 58180, 58182, 58184, 58186, 58192, 58196, 58198, 58200, 58218
+        58160, 58164, 58166, 58174, 58176, 58178, 58180, 58182, 58184, 58186, 58192, 58196, 58198, 58200,
+        58204, 58206, 58208, 58210, 58212, 58214, 58216, 58218,
+        65210, 65212, 65214
     ];
 }

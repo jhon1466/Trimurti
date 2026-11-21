@@ -46,20 +46,23 @@ public sealed class EquipSeizure(GameAccountRepository accounts, SourceGameConfi
         }).Min().ToUnixTimeSeconds();
     }
 
-    /// <summary>Score of a run from kills (waves estimated) or time, with boss bounties (calc_equip_seizure_score).</summary>
-    public static int Score(int enemyDead, int battleTimeMs, bool win)
+    /// <summary>Score of a run from reported waves (record 42) or kills (waves estimated), with boss bounties (calc_equip_seizure_score).</summary>
+    public static int Score(int enemyDead, int battleTimeMs, bool win, int? reportedWaves = null)
     {
         int waves;
-        if (enemyDead > 0) waves = enemyDead <= 91 ? Math.Max(1, (int)Math.Round(enemyDead / 4.8, MidpointRounding.ToEven)) : Math.Max(1, (int)Math.Round(19 + (enemyDead - 91) / 20.2 * 5, MidpointRounding.ToEven));
+        if (reportedWaves is int rw && rw >= 0) waves = rw;
+        else if (enemyDead > 0) waves = enemyDead <= 91 ? Math.Max(1, (int)Math.Round(enemyDead / 4.8, MidpointRounding.ToEven)) : Math.Max(1, (int)Math.Round(19 + (enemyDead - 91) / 20.2 * 5, MidpointRounding.ToEven));
         else if (battleTimeMs > 0) waves = Math.Max(1, (int)((battleTimeMs > 1000 ? battleTimeMs / 1000.0 : battleTimeMs) / 15.0));
-        else waves = win ? 40 : 1;
+        else waves = win ? 40 : 0;
+        if (waves <= 0) return 0;
         var score = Math.Min(waves, 10) * 220;
         if (waves > 10) score += Math.Min(waves - 10, 10) * 280;
         if (waves > 20) score += Math.Min(waves - 20, 10) * 420;
         if (waves > 30) score += Math.Min(waves - 30, 10) * 400;
         if (waves > 40) score += (waves - 40) * 500;
-        for (var bw = 20; bw <= waves; bw += 5) score += 500 + (bw - 20) / 5 * 100;
-        return Math.Clamp(score, 200, 24000);
+        var bosses = Math.Max(0, (waves - 15) / 5);
+        score += 500 * bosses + 50 * bosses * (bosses - 1);
+        return Math.Clamp(score, 0, 24000);
     }
 
     public sealed class State
@@ -99,7 +102,8 @@ public sealed class EquipSeizure(GameAccountRepository accounts, SourceGameConfi
     /// <summary>Scores a finished seizure battle (any outcome) and returns the 35013 push.</summary>
     public async Task<GameResponse> SettleAsync(ProtoCodec codec, GameRequest r, BattleStats stats, bool win, IReadOnlyList<long> heroes, CancellationToken ct)
     {
-        var final = (int)Math.Round(Score(stats.EnemyDeadNum, stats.BattleTimeMs, win) * Rate(), MidpointRounding.ToEven);
+        int? reportedWaves = stats.Records.TryGetValue(42, out var rw) && rw >= 0 ? (int)Math.Min(int.MaxValue, rw) : null;
+        var final = (int)Math.Round(Score(stats.EnemyDeadNum, stats.BattleTimeMs, win, reportedWaves) * Rate(), MidpointRounding.ToEven);
         var s = await LoadAsync(r.AccountId, ct);
         s.Sum += Math.Max(0, final - s.TodayMax);
         s.TodayMax = Math.Max(s.TodayMax, final);

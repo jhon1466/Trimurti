@@ -40,6 +40,15 @@ public sealed class BattleUdpServer(BattleResultStore results, ILogger<BattleUdp
     // Pong serverTime - clientTime deltas (official capture): a converging curve, constant deltas fail SyncTime.
     private static readonly long[] PongDeltas = [-585, -313, -338, -315];
 
+    private sealed class PendingSeg(uint sn, byte[] frame, int retriesLeft, TimeSpan interval, DateTime retryAt)
+    {
+        public uint Sn = sn;
+        public byte[] Frame = frame;
+        public int RetriesLeft = retriesLeft;
+        public TimeSpan Interval = interval;
+        public DateTime RetryAt = retryAt;
+    }
+
     private sealed class Session
     {
         public uint Conn, Conv, Sn = uint.MaxValue, AckUna;
@@ -50,7 +59,10 @@ public sealed class BattleUdpServer(BattleResultStore results, ILogger<BattleUdp
         public byte[] FragBuffer = [];
         public int FragPending = -1;
         public ulong BattleId;
+        public readonly ConcurrentDictionary<uint, PendingSeg> SndBuf = new();
     }
+
+    private static bool SnLt(uint a, uint b) => unchecked(b - a) is > 0 and < 0x80000000;
 
     private readonly ConcurrentDictionary<uint, Session> _sessions = new();
     private UdpClient? _udp;
@@ -67,6 +79,7 @@ public sealed class BattleUdpServer(BattleResultStore results, ILogger<BattleUdp
         try { _udp.Client.IOControl(unchecked((int)0x9800000C), [0, 0, 0, 0], null); } catch { }
         logger.LogInformation("Trimūrti battle UDP/KCP server listening on 0.0.0.0:{Port}", Port);
         _ = Task.Run(() => CollectIdleAsync(stoppingToken), stoppingToken);
+        _ = Task.Run(() => RetransmitLoopAsync(stoppingToken), stoppingToken);
         while (!stoppingToken.IsCancellationRequested)
         {
             UdpReceiveResult packet;
@@ -86,6 +99,27 @@ public sealed class BattleUdpServer(BattleResultStore results, ILogger<BattleUdp
             try { await Task.Delay(TimeSpan.FromMinutes(1), ct); } catch { return; }
             foreach (var (id, s) in _sessions)
                 if (DateTime.UtcNow - s.LastSeen > TimeSpan.FromMinutes(10)) _sessions.TryRemove(id, out _);
+        }
+    }
+
+    private async Task RetransmitLoopAsync(CancellationToken ct)
+    {
+        while (!ct.IsCancellationRequested)
+        {
+            try { await Task.Delay(50, ct); } catch { return; }
+            var now = DateTime.UtcNow;
+            foreach (var (_, st) in _sessions)
+            {
+                if (st.SndBuf.IsEmpty) continue;
+                foreach (var (sn, seg) in st.SndBuf)
+                {
+                    if (now < seg.RetryAt) continue;
+                    if (seg.RetriesLeft <= 0) { st.SndBuf.TryRemove(sn, out _); continue; }
+                    seg.RetriesLeft--;
+                    seg.RetryAt = now + seg.Interval;
+                    SendKcp(st, KcpPush, seg.Frame, sn, null);
+                }
+            }
         }
     }
 
@@ -146,7 +180,14 @@ public sealed class BattleUdpServer(BattleResultStore results, ILogger<BattleUdp
 
             // Server sn must start at the client's rcv_nxt or the client drops our segments as old.
             if (!st.SnAligned && cmd == KcpPush) { st.SnAligned = true; st.Sn = sn - 1; }
-            if (cmd == KcpAck) { st.AckUna = Math.Max(st.AckUna, una); continue; }
+            if (cmd == KcpAck)
+            {
+                st.AckUna = Math.Max(st.AckUna, una);
+                st.SndBuf.TryRemove(sn, out _);
+                foreach (var s in st.SndBuf.Keys) if (SnLt(s, una)) st.SndBuf.TryRemove(s, out _);
+                continue;
+            }
+            foreach (var s in st.SndBuf.Keys) if (SnLt(s, una)) st.SndBuf.TryRemove(s, out _);
             if (cmd == KcpPush && payload.Length > 0)
             {
                 st.AckUna = Math.Max(st.AckUna, sn + 1);
@@ -228,21 +269,27 @@ public sealed class BattleUdpServer(BattleResultStore results, ILogger<BattleUdp
                 var nums = nested.TryGetValue(4, out rawInfo) ? Repeated(rawInfo, 13) : [];
                 var items = new Dictionary<long, long>();
                 for (var i = 0; i < Math.Min(ids.Count, nums.Count); i++) items[(long)ids[i]] = items.GetValueOrDefault((long)ids[i]) + (long)nums[i];
-                var stats = new BattleStats(F(2), F(3), F(4), F(5), F(6), F(7), F(9), F(11)) { Items = items };
+                var recIds = nested.TryGetValue(4, out rawInfo) ? Repeated(rawInfo, 14) : [];
+                var recNums = nested.TryGetValue(4, out rawInfo) ? Repeated(rawInfo, 15) : [];
+                var records = new Dictionary<long, long>();
+                for (var i = 0; i < Math.Min(recIds.Count, recNums.Count); i++) records[(long)recIds[i]] = (long)recNums[i];
+                var stats = new BattleStats(F(2), F(3), F(4), F(5), F(6), F(7), F(9), F(11)) { Items = items, Records = records };
                 results.Put(battleId, new BattleReport(result, info.GetValueOrDefault(1) != 0, F(2), stats));
                 logger.LogInformation("Battle UDP result battle={Battle} result={Result}", battleId, result);
                 var code = (ulong)Math.Max(1, result);
-                // Exactly one 134 (rpc echo) and one 135, as Alpha-Persei's verified implementation sends; KCP itself
-                // retransmits until acknowledged. Duplicates confused the client while it tears the battle link down.
-                SendFrame(st, OpAckBattleResult, Pb(1, code), 2, rpc);
-                SendFrame(st, OpAckBattleGsResult, Pb(1, code), 0, 0);
+                // Reliable KCP delivery for 134/135 (20 retries × 150ms = 3s window, matching Alpha-Persei 955833b).
+                SendReliableFrame(st, OpAckBattleResult, Pb(1, code), 2, rpc, retries: 20, intervalMs: 150);
+                SendReliableFrame(st, OpAckBattleGsResult, Pb(1, code), 0, 0, retries: 20, intervalMs: 150);
                 break;
             }
             // 0 / 123: client battle frame upload — KCP ACK is enough.
         }
     }
 
-    private void SendFrame(Session st, ushort opcode, byte[] body, byte flag, uint rpc, uint? ts = null)
+    private void SendFrame(Session st, ushort opcode, byte[] body, byte flag, uint rpc, uint? ts = null) =>
+        SendReliableFrame(st, opcode, body, flag, rpc, ts, retries: 12, intervalMs: 200);
+
+    private void SendReliableFrame(Session st, ushort opcode, byte[] body, byte flag, uint rpc, uint? ts = null, int retries = 12, int intervalMs = 200)
     {
         var header = flag == 0 ? 3 : 7;
         var frame = new byte[header + body.Length];
@@ -250,7 +297,12 @@ public sealed class BattleUdpServer(BattleResultStore results, ILogger<BattleUdp
         BinaryPrimitives.WriteUInt16LittleEndian(frame.AsSpan(1), opcode);
         if (flag != 0) BinaryPrimitives.WriteUInt32LittleEndian(frame.AsSpan(3), rpc);
         body.CopyTo(frame, header);
-        SendKcp(st, KcpPush, frame, null, ts);
+        var sn = ++st.Sn;
+        if (st.SndBuf.Count >= 64)
+            foreach (var old in st.SndBuf.Keys.Order().Take(16)) st.SndBuf.TryRemove(old, out _);
+        var interval = TimeSpan.FromMilliseconds(intervalMs);
+        st.SndBuf[sn] = new PendingSeg(sn, frame, retries, interval, DateTime.UtcNow + interval);
+        SendKcp(st, KcpPush, frame, sn, ts);
     }
 
     private void SendKcp(Session st, byte cmd, byte[] data, uint? sn, uint? ts)

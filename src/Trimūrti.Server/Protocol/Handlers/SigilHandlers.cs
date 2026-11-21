@@ -476,18 +476,30 @@ public sealed class SigilSystem(GameAccountRepository accounts, SourceGameConfig
 
         var frames = await InventorySync.FramesAsync(accounts, codec, r, c2.Concat(g2).Select(x => x.Item1), ct);
         // Item-like sigil changes: deletions (num 0) and enchant / race / prefab changes (exp is tracked by the client itself).
-        var changed = updates.Where(u => cmd is 13028 or 13030 or 13044 or 13060 or 13032 or 13034 or 13046 or 13052)
+        var changed = updates.Where(u => cmd is 13028 or 13030 or 13044 or 13060 or 13032 or 13034 or 13046)
             .Select(u => (object)new Dictionary<string, object?> { ["equip_id"] = (uint)u.Id, ["prefab_id"] = (uint)u.Prefab, ["num"] = 1u, ["enchant_slot_list"] = SlotRecs(u.Enchant), ["race"] = (uint)u.Race })
             .Concat(deletes.Select(d => (object)new Dictionary<string, object?> { ["equip_id"] = (uint)d, ["prefab_id"] = 0u, ["num"] = 0u, ["enchant_slot_list"] = Array.Empty<object>(), ["race"] = 0u })).ToArray();
         if (changed.Length > 0)
             frames.Add(new GameResponse(17023, 0, srv, codec.Encode("sc_17023", new Dictionary<string, object?> { ["equip_list"] = changed })));
+        if (cmd == 13052 && updates.Count > 0)
+        {
+            // EquipData:AddEquip keeps old prefab index unless removed first via sc_17023(num=0), then restored via sc_13009.
+            var inherited = updates[0];
+            frames.Add(new GameResponse(17023, 0, srv, codec.Encode("sc_17023", new Dictionary<string, object?>
+            {
+                ["equip_list"] = new object[] { new Dictionary<string, object?> { ["equip_id"] = (uint)inherited.Id, ["prefab_id"] = (uint)inherited.Prefab, ["num"] = 0u, ["enchant_slot_list"] = Array.Empty<object>(), ["race"] = 0u } }
+            })));
+            frames.Add(new GameResponse(13009, 0, srv, codec.Encode("sc_13009", new Dictionary<string, object?> { ["equip_list"] = new[] { EquipRec(inherited) }, ["is_init"] = 0u })));
+        }
+        var ackFirst = cmd is 13012 or 13018 or 13026;
+        if (ackFirst) frames.Add(HandlerHelpers.Reply(codec, r, cmd + 1, reply));
         foreach (var hero in heroes)
             if (await LoginBootstrap.BuildSingleHeroNetRecAsync(accounts, uid, hero, ct) is { } rec)
                 frames.Add(new GameResponse(14007, 0, srv, codec.Encode("sc_14007", new Dictionary<string, object?> { ["hero"] = rec })));
         if (cmd == 13054) frames.Add(new GameResponse(13057, 0, srv, (await AutoDecomposeFrameAsync(uid, ct)).Item2));
         var achCond = cmd switch { 13028 or 13060 => 204, 13032 => 205, 13046 => 211, _ => 0 };
         if (achCond != 0 && await new AchievementSystem(accounts, config, codec).EventAsync(uid, srv, achCond, 1, ct) is { } ach) frames.Add(ach);
-        frames.Add(HandlerHelpers.Reply(codec, r, cmd + 1, reply));
+        if (!ackFirst) frames.Add(HandlerHelpers.Reply(codec, r, cmd + 1, reply));
         return frames;
     }
 

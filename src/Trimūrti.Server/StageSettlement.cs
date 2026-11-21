@@ -10,6 +10,9 @@ public sealed record BattleStats(int BattleTimeMs, int DeadNum, int HittedNum, i
 
     /// <summary>Items collected in battle (BattleResultInfo fields 12 item ids / 13 item numbers), used by mythic stars.</summary>
     public IReadOnlyDictionary<long, long> Items { get; init; } = new Dictionary<long, long>();
+
+    /// <summary>Battle record counters (BattleResultInfo fields 14 record_data_ids / 15 record_data_numbers, e.g. 42 = seizure waves).</summary>
+    public IReadOnlyDictionary<long, long> Records { get; init; } = new Dictionary<long, long>();
 }
 
 /// <summary>One star condition evaluated against the battle report (battle_result_net_rec.star_list entry).</summary>

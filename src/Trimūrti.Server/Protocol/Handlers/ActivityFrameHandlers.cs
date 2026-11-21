@@ -14,7 +14,7 @@ namespace Trimūrti.Server.Protocol.Handlers;
 public sealed class PlayerFrames(GameAccountRepository accounts, SourceGameConfig config, ProtoCodec codec)
     : EventModeBase(accounts, config, codec, "battle_system_cfg.json"), IStageMode
 {
-    public static readonly uint[] Commands = [81002, 68156, 11036];
+    public static readonly uint[] Commands = [81002, 68156, 11036, 64078, 64084, 76152, 76154];
     private const string Kind = "player_frames_v1";
 
     public sealed class Instance { public uint Id { get; set; } public uint Item { get; set; } public uint Num { get; set; } public List<uint[]> Select { get; set; } = []; }
@@ -22,6 +22,7 @@ public sealed class PlayerFrames(GameAccountRepository accounts, SourceGameConfi
     public sealed class PointRec { public uint Point { get; set; } public List<uint> Rewards { get; set; } = []; }
     public sealed class SkinDraw { public Dictionary<uint, uint> Drops { get; set; } = []; public uint StoryStage { get; set; } public List<uint> Stories { get; set; } = []; public uint Last { get; set; } public List<uint> Already { get; set; } = []; }
     public sealed class PtScroll { public List<uint> Clear { get; set; } = []; public uint Buff { get; set; } public uint Up { get; set; } public uint Index { get; set; } public uint Times { get; set; } }
+    public sealed class CultivateRec { public List<uint> ClaimedTasks { get; set; } = []; public string DailyDay { get; set; } = ""; public List<uint> ClaimedPoints { get; set; } = []; }
 
     public sealed class State
     {
@@ -33,6 +34,7 @@ public sealed class PlayerFrames(GameAccountRepository accounts, SourceGameConfi
         public Dictionary<uint, PointRec> Points { get; set; } = [];
         public Dictionary<uint, SkinDraw> Draws { get; set; } = [];
         public Dictionary<uint, PtScroll> Scrolls { get; set; } = [];
+        public Dictionary<uint, CultivateRec> Cultivate { get; set; } = [];
     }
 
     private async Task<State> LoadAsync(long uid, CancellationToken ct) => await Accounts.GetJsonAsync<State>(uid, Kind, ct) ?? new State();
@@ -207,6 +209,94 @@ public sealed class PlayerFrames(GameAccountRepository accounts, SourceGameConfi
                 frames.Add(HandlerHelpers.Reply(Codec, r, 11037, new Dictionary<string, object?>
                 {
                     ["result"] = 0u, ["item_list"] = granted.Select(x => (object?)new Dictionary<string, object?> { ["item_id"] = (uint)x.Item1, ["item_num"] = (uint)x.Item2 }).ToArray()
+                }));
+                return frames;
+            }
+            case 64078:
+            {
+                var aid = HandlerHelpers.ReadUInt(r.Body, "activity_id");
+                var taskIds = HandlerHelpers.ReadIdList(r.Body, "task_id_list").Select(x => (uint)x).Distinct().ToList();
+                var cultCfg = config.Get("cultivate_hero_cfg.json");
+                if (cultCfg is not { ValueKind: JsonValueKind.Object } root || !root.TryGetProperty(aid.ToString(), out var act) || taskIds.Count == 0)
+                    return [HandlerHelpers.Reply(Codec, r, 64079, new Dictionary<string, object?> { ["result"] = 2u, ["reward_list"] = Array.Empty<object>() })];
+                if (!s.Cultivate.TryGetValue(aid, out var rec)) s.Cultivate[aid] = rec = new CultivateRec();
+                var tasks = act.GetProperty("tasks");
+                var rewards = new List<(long, long)>();
+                foreach (var tid in taskIds)
+                {
+                    if (rec.ClaimedTasks.Contains(tid) || !tasks.TryGetProperty(tid.ToString(), out var tcfg)) continue;
+                    rec.ClaimedTasks.Add(tid);
+                    rewards.AddRange(Pairs(tcfg.GetProperty("reward")));
+                }
+                if (rewards.Count == 0)
+                    return [HandlerHelpers.Reply(Codec, r, 64079, new Dictionary<string, object?> { ["result"] = 2u, ["reward_list"] = Array.Empty<object>() })];
+                var granted = await Accounts.GrantItemsAsync(uid, rewards, ct);
+                await SaveAsync(uid, s, ct);
+                var frames = await SyncAsync(r, granted.Select(x => x.Item1), ct);
+                frames.Add(HandlerHelpers.Reply(Codec, r, 64079, new Dictionary<string, object?>
+                {
+                    ["result"] = 0u, ["reward_list"] = HandlerHelpers.ToItemNetRecList(granted)
+                }));
+                return frames;
+            }
+            case 64084:
+            {
+                var aid = HandlerHelpers.ReadUInt(r.Body, "activity_id");
+                var cultCfg = config.Get("cultivate_hero_cfg.json");
+                if (cultCfg is not { ValueKind: JsonValueKind.Object } root || !root.TryGetProperty(aid.ToString(), out var act))
+                    return [HandlerHelpers.Reply(Codec, r, 64085, new Dictionary<string, object?> { ["result"] = 2u, ["reward_list"] = Array.Empty<object>() })];
+                if (!s.Cultivate.TryGetValue(aid, out var rec)) s.Cultivate[aid] = rec = new CultivateRec();
+                var day = GameClock.Now.AddHours(-5).ToString("yyyy-MM-dd");
+                if (rec.DailyDay == day)
+                    return [HandlerHelpers.Reply(Codec, r, 64085, new Dictionary<string, object?> { ["result"] = 2u, ["reward_list"] = Array.Empty<object>() })];
+                rec.DailyDay = day;
+                var granted = await Accounts.GrantItemsAsync(uid, Pairs(act.GetProperty("daily_reward")), ct);
+                await SaveAsync(uid, s, ct);
+                var frames = await SyncAsync(r, granted.Select(x => x.Item1), ct);
+                frames.Add(HandlerHelpers.Reply(Codec, r, 64085, new Dictionary<string, object?>
+                {
+                    ["result"] = 0u, ["reward_list"] = HandlerHelpers.ToItemNetRecList(granted)
+                }));
+                return frames;
+            }
+            case 76152:
+            {
+                var aid = HandlerHelpers.ReadUInt(r.Body, "activity_id");
+                var up = HandlerHelpers.ReadUInt(r.Body, "up_select");
+                if (!s.Scrolls.TryGetValue(aid, out var sc)) s.Scrolls[aid] = sc = new PtScroll();
+                sc.Up = up;
+                await SaveAsync(uid, s, ct);
+                return [HandlerHelpers.ResultOnly(Codec, r, 76153, 0u)];
+            }
+            case 76154:
+            {
+                var aid = HandlerHelpers.ReadUInt(r.Body, "activity_id");
+                var times = HandlerHelpers.ReadUInt(r.Body, "times");
+                var ptCfg = config.Get("pt_scroll_cfg.json");
+                if (ptCfg is not { ValueKind: JsonValueKind.Object } root || !root.TryGetProperty(aid.ToString(), out var act))
+                    return [HandlerHelpers.Reply(Codec, r, 76155, new Dictionary<string, object?> { ["result"] = 2u, ["reward_list"] = Array.Empty<object>() })];
+                if (!s.Scrolls.TryGetValue(aid, out var sc)) s.Scrolls[aid] = sc = new PtScroll();
+                var available = sc.Times / 2u;
+                var rewards = new List<(long, long)>();
+                if (times > 0 && times <= available)
+                {
+                    foreach (var st in act.GetProperty("stages").EnumerateObject())
+                    {
+                        if (st.Value.GetProperty("mode").GetInt32() == 2)
+                        {
+                            var cost = st.Value.GetProperty("cost");
+                            rewards.Add((cost[0].GetInt64(), cost[1].GetInt64() * times));
+                            break;
+                        }
+                    }
+                    sc.Times -= times * 2u;
+                }
+                var granted = rewards.Count > 0 ? await Accounts.GrantItemsAsync(uid, rewards, ct) : [];
+                await SaveAsync(uid, s, ct);
+                var frames = await SyncAsync(r, granted.Select(x => x.Item1), ct);
+                frames.Add(HandlerHelpers.Reply(Codec, r, 76155, new Dictionary<string, object?>
+                {
+                    ["result"] = 0u, ["reward_list"] = HandlerHelpers.ToItemNetRecList(granted)
                 }));
                 return frames;
             }

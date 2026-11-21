@@ -112,23 +112,120 @@ public sealed class ProfileHomeSceneHandler(GameAccountRepository accounts, Prot
     }
 }
 
-/// <summary>Updates lobby random hero or scene list (32130 -> 32131).</summary>
-public sealed class ProfileRandomListHandler(GameAccountRepository accounts, ProtoCodec codec) : IGameCommandHandler
+/// <summary>Persistent lobby rotation preferences (heroes type=1 and backgrounds type=2) for sc_32009.random_info.</summary>
+public static class LobbyRandomPrefs
 {
-    public uint Command => 32130;
+    private const string Kind = "lobby_random_v1";
+
+    public sealed class Entry
+    {
+        public uint Model { get; set; }
+        public uint ShowHeroDressingScene { get; set; } = 1;
+        public uint RoutineHeroDressingScene { get; set; } = 1;
+        public List<uint> List { get; set; } = [];
+    }
+
+    public sealed class State
+    {
+        public Entry Hero { get; set; } = new();
+        public Entry Scene { get; set; } = new();
+        public Entry ForType(uint type) => type == 2 ? Scene : Hero;
+    }
+
+    public static async Task<State> LoadAsync(GameAccountRepository accounts, long uid, CancellationToken ct) =>
+        await accounts.GetJsonAsync<State>(uid, Kind, ct) ?? new State();
+
+    public static Task SaveAsync(GameAccountRepository accounts, long uid, State state, CancellationToken ct) =>
+        accounts.SetJsonAsync(uid, Kind, state, ct);
+
+    public static async Task<object[]> BuildRandomInfoAsync(GameAccountRepository accounts, long uid, int boardHero, int curScene, CancellationToken ct)
+    {
+        var st = await LoadAsync(accounts, uid, ct);
+        var heroList = st.Hero.List.Count > 0 ? st.Hero.List.ToArray() : [(uint)(boardHero > 0 ? boardHero : 1084)];
+        var sceneList = st.Scene.List.Count > 0 ? st.Scene.List.ToArray() : [(uint)(curScene > 0 ? curScene : 6000)];
+        return
+        [
+            new Dictionary<string, object?>
+            {
+                ["random_type"] = 1u,
+                ["random_model"] = st.Hero.Model,
+                ["show_hero_dressing_scene"] = st.Hero.ShowHeroDressingScene,
+                ["routine_hero_dressing_scene"] = st.Hero.RoutineHeroDressingScene,
+                ["random_list"] = heroList
+            },
+            new Dictionary<string, object?>
+            {
+                ["random_type"] = 2u,
+                ["random_model"] = st.Scene.Model,
+                ["show_hero_dressing_scene"] = st.Scene.ShowHeroDressingScene,
+                ["routine_hero_dressing_scene"] = st.Scene.RoutineHeroDressingScene,
+                ["random_list"] = sceneList
+            }
+        ];
+    }
+}
+
+/// <summary>Persists lobby random/rotation preferences for heroes and backgrounds (32122, 32124, 32126, 32128, 32130).</summary>
+public sealed class ProfileLobbyRandomHandler(uint command, GameAccountRepository accounts, ProtoCodec codec) : IGameCommandHandler
+{
+    public static readonly uint[] Commands = [32122, 32124, 32126, 32128, 32130];
+    public uint Command => command;
 
     public async ValueTask<IReadOnlyList<GameResponse>> HandleAsync(GameRequest request, CancellationToken cancellationToken)
     {
-        var type = HandlerHelpers.ReadUInt(request.Body, "type");
-        var list = HandlerHelpers.ReadIdList(request.Body, "random_list");
-        if (list.Count > 0 && list[0] > 0)
+        var st = await LobbyRandomPrefs.LoadAsync(accounts, request.AccountId, cancellationToken);
+        switch (command)
         {
-            if (type == 1)
-                await accounts.UpdateBoardHeroAsync(request.AccountId, (int)list[0], cancellationToken);
-            else if (type == 2)
-                await accounts.UpdateHomeSceneAsync(request.AccountId, (int)list[0], cancellationToken);
+            case 32122:
+            {
+                if (request.Body.TryGetValue("random_info_list", out var raw) && raw is System.Collections.IEnumerable seq && raw is not string)
+                {
+                    foreach (var item in seq.OfType<IReadOnlyDictionary<string, object?>>())
+                    {
+                        var rtype = HandlerHelpers.ReadUInt(item, "random_type", 1);
+                        var entry = st.ForType(rtype);
+                        entry.Model = HandlerHelpers.ReadUInt(item, "random_model", entry.Model);
+                        entry.ShowHeroDressingScene = HandlerHelpers.ReadUInt(item, "show_hero_dressing_scene", entry.ShowHeroDressingScene);
+                        entry.RoutineHeroDressingScene = HandlerHelpers.ReadUInt(item, "routine_hero_dressing_scene", entry.RoutineHeroDressingScene);
+                        var ids = HandlerHelpers.ReadIdList(item, "random_list").Where(x => x > 0).Select(x => (uint)x).Distinct().ToList();
+                        if (ids.Count > 0) entry.List = ids;
+                    }
+                }
+                break;
+            }
+            case 32124:
+            {
+                var type = HandlerHelpers.ReadUInt(request.Body, "type", 1);
+                st.ForType(type).Model = HandlerHelpers.ReadUInt(request.Body, "model");
+                break;
+            }
+            case 32126:
+            {
+                var type = HandlerHelpers.ReadUInt(request.Body, "type", 1);
+                st.ForType(type).ShowHeroDressingScene = HandlerHelpers.ReadUInt(request.Body, "show_hero_dressing_scene");
+                break;
+            }
+            case 32128:
+            {
+                var type = HandlerHelpers.ReadUInt(request.Body, "type", 1);
+                st.ForType(type).RoutineHeroDressingScene = HandlerHelpers.ReadUInt(request.Body, "routine_hero_dressing_scene");
+                break;
+            }
+            case 32130:
+            {
+                var type = HandlerHelpers.ReadUInt(request.Body, "type", 1);
+                var ids = HandlerHelpers.ReadIdList(request.Body, "random_list").Where(x => x > 0).Select(x => (uint)x).Distinct().ToList();
+                st.ForType(type).List = ids;
+                if (ids.Count > 0)
+                {
+                    if (type == 1) await accounts.UpdateBoardHeroAsync(request.AccountId, (int)ids[0], cancellationToken);
+                    else if (type == 2) await accounts.UpdateHomeSceneAsync(request.AccountId, (int)ids[0], cancellationToken);
+                }
+                break;
+            }
         }
-        return [HandlerHelpers.ResultOnly(codec, request, 32131, 0u)];
+        await LobbyRandomPrefs.SaveAsync(accounts, request.AccountId, st, cancellationToken);
+        return [HandlerHelpers.ResultOnly(codec, request, command + 1, 0u)];
     }
 }
 

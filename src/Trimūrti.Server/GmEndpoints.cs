@@ -92,7 +92,12 @@ public static class GmEndpoints
         {
             if (req.Uid <= 0 || string.IsNullOrWhiteSpace(req.Title))
                 return Results.BadRequest(new { error = "uid and title are required." });
-            var attachments = (req.Attachments ?? []).Select(a => (a.ItemId, a.Count)).ToArray();
+            static bool IsBlockedMailAttachment(long id) =>
+                id == 30054 || id is >= 1_000_000_000 and <= 2_000_000_000 || id is >= 830_000 and <= 859_999;
+            var attachments = (req.Attachments ?? [])
+                .Where(a => a.ItemId > 0 && a.Count > 0 && !IsBlockedMailAttachment(a.ItemId))
+                .Select(a => (a.ItemId, a.Count))
+                .ToArray();
             var mailId = await repo.SendSystemMailAsync(req.Uid, req.Title, req.Content ?? "", req.Sender ?? "Trimūrti GM", attachments, ct);
             return Results.Ok(new { req.Uid, mailId, attachments = attachments.Length });
         });

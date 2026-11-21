@@ -274,7 +274,32 @@ builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler, Tri
 builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler, Trimūrti.Server.Protocol.Handlers.ProfilePortraitHandler>();
 builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler, Trimūrti.Server.Protocol.Handlers.ProfileIconFrameHandler>();
 builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler, Trimūrti.Server.Protocol.Handlers.ProfileHomeSceneHandler>();
-builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler, Trimūrti.Server.Protocol.Handlers.ProfileRandomListHandler>();
+foreach (var lobbyRandomCmd in Trimūrti.Server.Protocol.Handlers.ProfileLobbyRandomHandler.Commands)
+{
+    var cmd = lobbyRandomCmd;
+    builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler>(sp =>
+        new Trimūrti.Server.Protocol.Handlers.ProfileLobbyRandomHandler(cmd, sp.GetRequiredService<Trimūrti.Server.GameAccountRepository>(), sp.GetRequiredService<Trimūrti.Server.Protocol.ProtoCodec>()));
+}
+builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler, Trimūrti.Server.Protocol.Handlers.ProfileStickerWallHandler>();
+builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler, Trimūrti.Server.Protocol.Handlers.ArchivePictureHandler>();
+foreach (var illuCmd in Trimūrti.Server.Protocol.Handlers.IllustratedHandler.Commands)
+{
+    var cmd = illuCmd;
+    builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler>(sp =>
+        new Trimūrti.Server.Protocol.Handlers.IllustratedHandler(cmd, sp.GetRequiredService<Trimūrti.Server.GameAccountRepository>(), sp.GetRequiredService<Trimūrti.Server.Protocol.ProtoCodec>()));
+}
+foreach (var resCmd in Trimūrti.Server.Protocol.Handlers.ReserveTeamHandler.Commands)
+{
+    var cmd = resCmd;
+    builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler>(sp =>
+        new Trimūrti.Server.Protocol.Handlers.ReserveTeamHandler(cmd, sp.GetRequiredService<Trimūrti.Server.GameAccountRepository>(), sp.GetRequiredService<Trimūrti.Server.Protocol.ProtoCodec>()));
+}
+foreach (var miscCmd in Trimūrti.Server.Protocol.Handlers.MiscSinglePlayerHandler.Commands)
+{
+    var cmd = miscCmd;
+    builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler>(sp =>
+        new Trimūrti.Server.Protocol.Handlers.MiscSinglePlayerHandler(cmd, sp.GetRequiredService<Trimūrti.Server.GameAccountRepository>(), sp.GetRequiredService<Trimūrti.Server.Protocol.ProtoCodec>()));
+}
 builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler, Trimūrti.Server.Protocol.Handlers.ProfileLobbySyncHandler>();
 builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler, Trimūrti.Server.Protocol.Handlers.ProfileSpecialSceneViewHandler>();
 builder.Services.AddSingleton<Trimūrti.Server.Protocol.CommandDispatcher>();
