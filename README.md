@@ -45,6 +45,42 @@ Questions, bugs or ideas? Join the **Discord server**: news are announced there,
 
 ---
 
+## Cliente chino (CN) · Chinese Client (CN) · 国服客户端（CN）· 中国版クライアント（CN）
+
+<div align="center">
+
+<a href="https://drive.google.com/file/d/1PTs2Ezr3bgx4O2z_Z-_uqq6ceMyNHw7p/view?usp=sharing"><img src="https://img.shields.io/badge/Google%20Drive-Descargar%20%C2%B7%20Download%20%C2%B7%20%E4%B8%8B%E8%BD%BD%20%C2%B7%20%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89-4285F4?style=for-the-badge&logo=googledrive&logoColor=white&labelColor=1967D2" alt="Descargar Cliente Chino (CN) - Google Drive" height="40" /></a>
+
+**Solo compatible con el cliente chino (CN) de PC** (no funciona con la versión Global). Descomprime el archivo y selecciona la carpeta del juego en **Trimūrti GM Tools**.
+
+**Compatible with the Chinese (CN) PC client only** (not compatible with the Global version). Extract the archive and select the game folder in **Trimūrti GM Tools**.
+
+**仅兼容国服（CN）PC 客户端**（不支持国际服版本）。解压压缩包后，在 **Trimūrti GM Tools** 中选择游戏目录即可。
+
+**中国版（CN）PC クライアント専用**（グローバル版には非対応です）。アーカイブを展開し、**Trimūrti GM Tools** でゲームフォルダを選択してください。
+
+</div>
+
+---
+
+## 💬 Comunidad · Community · 社区 · コミュニティ
+
+<div align="center">
+
+<a href="https://discord.gg/sfPVdxpv98"><img src="https://img.shields.io/badge/Discord-%C3%9Anete%20%C2%B7%20Join%20%C2%B7%20%E5%8A%A0%E5%85%A5%20%C2%B7%20%E5%8F%82%E5%8A%A0-5865F2?style=for-the-badge&logo=discord&logoColor=white&labelColor=404EED" alt="Discord" height="40" /></a>
+
+¿Dudas, errores o ideas? Únete al **servidor de Discord**: ahí se anuncian las novedades, se reportan fallos y se ayuda con la instalación.
+
+Questions, bugs or ideas? Join the **Discord server**: news are announced there, bugs get reported and you can get help with the setup.
+
+有疑问、发现问题或有建议？欢迎加入 **Discord 服务器**：这里会发布更新公告、反馈问题，并提供安装帮助。
+
+質問・不具合・アイデアがあれば **Discord サーバー** へどうぞ。最新情報の告知、不具合の報告、導入のサポートを行っています。
+
+</div>
+
+---
+
 ## 📦 Cliente chino (CN) · Chinese Client (CN) · 国服客户端（CN）· 中国版クライアント（CN）
 
 <div align="center">
@@ -137,7 +173,7 @@ dotnet build "src/Trimūrti.Server"
 | Personajes | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Nivel, ruptura, estrellas, habilidades, astrolabio, skins, confianza, juramento, chips. |
 | Armas, sirvientes y sigils | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Mejora, ruptura, mejora rápida, encantamientos. |
 | Inventario y objetos | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Uso de objetos, cofres, conversión de piezas. |
-| Tienda | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Tiendas de las tablas del cliente con límites y refrescos. La tienda de skins aparece pero sin artículos. |
+| Tienda | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Todas las tiendas de recursos con límites y refrescos, además de las tiendas de skins (15, 16 y 17) con compra en moneda del juego. |
 | Gacha | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Bandas, probabilidad garantizada, selección de UP, historial. |
 | Correo, tareas y logros | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Correo, tareas diarias/semanales y la mayoría de logros; faltan algunos logros de estadísticas de combate. |
 | Firmas diarias | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Firma de 7 días y acumulativas; la firma mensual necesita su tabla de premios. |
@@ -237,7 +273,7 @@ dotnet build "src/Trimūrti.Server"
 | Characters | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Level, breakthrough, stars, skills, astrolabe, skins, trust, oath, chips. |
 | Weapons, servants and sigils | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Upgrade, breakthrough, quick upgrade, enchantments. |
 | Inventory and items | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Item use, chests, piece conversion. |
-| Shop | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | Shops from the client tables with limits and refreshes. The skin shop appears but has no goods. |
+| Shop | ![Works](https://img.shields.io/badge/Works-22c55e?style=flat-square) | All resource shops with limits and refreshes, plus the skin shops (15, 16, and 17) purchasable with in-game currency. |
 | Gacha | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Banners, pity, UP selection, history. |
 | Mail, tasks and achievements | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | Mail, daily/weekly tasks and most achievements; some combat-statistics achievements are missing. |
 | Daily sign-in | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | 7-day and cumulative sign-ins; the monthly sign-in needs its reward table. |
@@ -337,7 +373,7 @@ dotnet build "src/Trimūrti.Server"
 | 修正者（角色） | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 等级、突破、星级、技能、星盘、皮肤、信赖、誓约、芯片。 |
 | 武器、钥从与刻印 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 强化、突破、快速强化、附魔。 |
 | 背包与道具 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 使用道具、宝箱、碎片转换。 |
-| 商店 | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 客户端配置表中的商店，含限购与刷新。换装商店可见但没有商品。 |
+| 商店 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 全部资源商店（含限购与刷新）以及换装商店（15、16、17），支持使用游戏内货币购买皮肤。 |
 | 抽卡 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 卡池、保底、UP 选择、记录。 |
 | 邮件、任务与成就 | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 邮件、每日/每周任务与大部分成就；部分战斗统计类成就尚未实现。 |
 | 签到 | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 七日签到与累计签到；月签到缺少奖励表。 |
@@ -437,7 +473,7 @@ dotnet build "src/Trimūrti.Server"
 | 修正者（キャラクター） | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | レベル、突破、星、スキル、星盤、スキン、信頼、誓約、チップ。 |
 | 武器・従者・刻印 | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 強化、突破、一括強化、エンチャント。 |
 | インベントリとアイテム | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | アイテム使用、宝箱、欠片の変換。 |
-| ショップ | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | クライアントのテーブルにあるショップ（購入制限・更新あり）。スキンショップは表示されるが商品なし。 |
+| ショップ | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 全リソースショップ（購入制限・更新あり）およびスキンショップ（15・16・17）に対応し、ゲーム内通貨で購入可能。 |
 | ガチャ | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | ピックアップ、天井、UP 選択、履歴。 |
 | メール・タスク・実績 | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | メール、デイリー/ウィークリータスク、大半の実績。一部の戦闘統計実績は未対応。 |
 | ログインボーナス | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | 7 日間と累計ログイン。月間ログインは報酬テーブルが必要。 |

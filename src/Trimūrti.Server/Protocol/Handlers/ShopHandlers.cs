@@ -22,6 +22,67 @@ public sealed class ShopSystem(GameAccountRepository accounts, SourceGameConfig 
     private static int I(JsonElement e, string k) => e.TryGetProperty(k, out var v) && v.ValueKind == JsonValueKind.Number ? (int)v.GetInt64() : 0;
     private static long N(JsonElement e, string k) => e.TryGetProperty(k, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetInt64() : 0;
 
+    private sealed record DynamicGood(long GoodsId, int ShopId, int Sort, long Description, long SkinId, long HeroId, long CostId, long Cost, int CostType);
+    private Dictionary<long, DynamicGood>? _dynamicGoods;
+    private Dictionary<int, List<DynamicGood>>? _dynamicByShop;
+
+    private void EnsureDynamicLoaded()
+    {
+        if (_dynamicGoods is not null) return;
+        _dynamicGoods = [];
+        _dynamicByShop = [];
+        var skinsEl = config.Get("all_skins_data.json");
+        var rcEl = config.Get("recharge_shop_catalog.json");
+        var tsmEl = config.Get("ticket_skin_map.json");
+        if (skinsEl is not { ValueKind: JsonValueKind.Array } || rcEl is not { ValueKind: JsonValueKind.Object }) return;
+
+        var invTicket = new Dictionary<long, long>();
+        if (tsmEl is { ValueKind: JsonValueKind.Object })
+            foreach (var p in tsmEl.Value.EnumerateObject())
+                if (long.TryParse(p.Name, out var tid) && p.Value.ValueKind == JsonValueKind.Number)
+                    invTicket.TryAdd(p.Value.GetInt64(), tid);
+
+        var sortCounter = new Dictionary<int, int>();
+        foreach (var sk in skinsEl.Value.EnumerateArray())
+        {
+            var sid = N(sk, "sid");
+            var heroId = N(sk, "hero_id");
+            if (sid <= 0 || !sk.TryGetProperty("goods", out var goodsArr) || goodsArr.ValueKind != JsonValueKind.Array) continue;
+            var hasScene = sk.TryGetProperty("scenes", out var sc) && sc.ValueKind == JsonValueKind.Array && sc.GetArrayLength() > 0;
+            var level = I(sk, "level");
+
+            long desc = 0;
+            foreach (var cand in new[] { sid, invTicket.GetValueOrDefault(sid), sid * 10 + 1 })
+                if (cand > 0 && rcEl.Value.TryGetProperty(cand.ToString(), out _)) { desc = cand; break; }
+            if (desc == 0) continue;
+
+            foreach (var gEl in goodsArr.EnumerateArray())
+            {
+                if (gEl.ValueKind != JsonValueKind.Number) continue;
+                var gid = gEl.GetInt64();
+                var shopId = (int)(gid / 1_000_000);
+                if (shopId is not (15 or 16 or 17)) continue;
+                if (_dynamicGoods.ContainsKey(gid)) continue;
+
+                var sort = sortCounter.GetValueOrDefault(shopId) + 1;
+                sortCounter[shopId] = sort;
+                var (costId, cost) = shopId switch
+                {
+                    15 => (24L, hasScene || level >= 1 ? 128L : 98L),
+                    16 => (24L, hasScene ? 98L : 68L),
+                    _ => (1L, 980L)
+                };
+                var dg = new DynamicGood(gid, shopId, sort, desc, sid, heroId, costId, cost, 2);
+                _dynamicGoods[gid] = dg;
+                if (!_dynamicByShop.TryGetValue(shopId, out var list)) _dynamicByShop[shopId] = list = [];
+                list.Add(dg);
+            }
+        }
+    }
+
+    private Dictionary<long, DynamicGood> DynamicGoods { get { EnsureDynamicLoaded(); return _dynamicGoods!; } }
+    private Dictionary<int, List<DynamicGood>> DynamicByShop { get { EnsureDynamicLoaded(); return _dynamicByShop!; } }
+
     public sealed class Bought { public long Times { get; set; } public long Reset { get; set; } }
     public sealed class State
     {
@@ -89,20 +150,69 @@ public sealed class ShopSystem(GameAccountRepository accounts, SourceGameConfig 
         return (s, level);
     }
 
+    private List<long> ShopShelf(State s, int shop) =>
+        DynamicByShop.TryGetValue(shop, out var dyn) ? dyn.Select(x => x.GoodsId).ToList()
+        : Rolling(shop) ? s.Rolled.GetValueOrDefault(shop, [])
+        : ByShop.GetValueOrDefault(shop, []).Select(x => x.Id).ToList();
+
     private object ShopInfo(State s, int shop) => new Dictionary<string, object?>
     {
         ["shop_id"] = (uint)shop, ["refresh_times"] = (uint)s.Refreshes.GetValueOrDefault(shop), ["is_need_tag"] = false,
-        ["goods_list"] = (Rolling(shop) ? s.Rolled.GetValueOrDefault(shop, []) : ByShop.GetValueOrDefault(shop, []).Select(x => x.Id).ToList())
+        ["goods_list"] = ShopShelf(s, shop)
             .Select(id => (object)new Dictionary<string, object?> { ["goods_id"] = (uint)id, ["buy_times"] = (uint)(s.Bought.GetValueOrDefault(id)?.Times ?? 0), ["next_refresh_timestamp"] = (uint)(s.Bought.GetValueOrDefault(id)?.Reset ?? 0) }).ToArray()
     };
+
+    private (uint, byte[]) DynamicCfgFrame()
+    {
+        var list = DynamicByShop.OrderBy(kv => kv.Key).Select(kv => (object)new Dictionary<string, object?>
+        {
+            ["shop_id"] = (uint)kv.Key,
+            ["goods_list"] = kv.Value.Select(g => (object)new Dictionary<string, object?>
+            {
+                ["goods_id"] = (uint)g.GoodsId,
+                ["shop_sort"] = (uint)g.Sort,
+                ["description"] = (uint)g.Description,
+                ["cost_type"] = (uint)g.CostType,
+                ["cost_id"] = (uint)g.CostId,
+                ["cost"] = (uint)g.Cost,
+                ["cheap_cost_id"] = 0u,
+                ["cheap_cost"] = 0u,
+                ["discount"] = 0u,
+                ["limit_num"] = 1,
+                ["level_limit"] = Array.Empty<object>(),
+                ["limit_display"] = 1u,
+                ["pre_goods_id"] = Array.Empty<uint>(),
+                ["refresh_cycle"] = 0u,
+                ["open_time"] = new Dictionary<string, object?>(),
+                ["close_time"] = new Dictionary<string, object?>(),
+                ["is_limit_time_discount"] = 0u,
+                ["cheap_open_time"] = new Dictionary<string, object?>(),
+                ["cheap_close_time"] = new Dictionary<string, object?>(),
+                ["tag"] = 0u,
+                ["next_goods_id"] = 0u,
+                ["give_back_list"] = Array.Empty<object>(),
+                ["dlc"] = 0u,
+                ["cost_id_2"] = 0u,
+                ["cost_2"] = 0u,
+                ["cheap_cost_id_2"] = 0u,
+                ["cheap_cost_2"] = 0u,
+                ["is_limit_time_discount_2"] = 0u,
+                ["cheap_open_time_2"] = new Dictionary<string, object?>(),
+                ["cheap_close_time_2"] = new Dictionary<string, object?>()
+            }).ToArray()
+        }).ToArray();
+        return (20007, codec.Encode("sc_20007", new Dictionary<string, object?> { ["shop_item_cfg_list"] = list }));
+    }
+
+    public async Task<IReadOnlyList<(uint, byte[])>> LoginFramesAsync(long uid, CancellationToken ct) =>
+        [DynamicCfgFrame(), await LoginFrameAsync(uid, ct)];
 
     public async Task<(uint, byte[])> LoginFrameAsync(long uid, CancellationToken ct)
     {
         var (s, _) = await LoadAsync(uid, ct);
         await accounts.SetJsonAsync(uid, "shop_v1", s, ct);
-        // Every ShopListCfg shop, also those whose goods the client tables do not carry (e.g. 15 换装商店): the client's
-        // ShopData.GetShop(id) must find an entry or views such as NewHeroSkinView fail on nil.
-        var shops = Cfg.GetProperty("shops").EnumerateObject().Select(p => int.Parse(p.Name)).Concat(ByShop.Keys).Distinct().Order();
+        var shops = Cfg.GetProperty("shops").EnumerateObject().Select(p => int.Parse(p.Name))
+            .Concat(ByShop.Keys).Concat(DynamicByShop.Keys).Distinct().Order();
         return (20009, codec.Encode("sc_20009", new Dictionary<string, object?> { ["shop_item_list"] = shops.Select(id => ShopInfo(s, id)).ToArray() }));
     }
 
@@ -118,6 +228,7 @@ public sealed class ShopSystem(GameAccountRepository accounts, SourceGameConfig 
         var reply = new Dictionary<string, object?> { ["result"] = 0u };
         var costs = new List<(long, long)>();
         var grants = new List<(long, long)>();
+        var unlockedSkins = new Dictionary<long, long>();
         var changedShops = new HashSet<int>();
         try
         {
@@ -130,13 +241,24 @@ public sealed class ShopSystem(GameAccountRepository accounts, SourceGameConfig 
                 case 20012:
                     {
                         var shop = (int)HandlerHelpers.ReadUInt(b, "shop_id");
-                        var shelf = Rolling(shop) ? s.Rolled.GetValueOrDefault(shop, []) : ByShop.GetValueOrDefault(shop, []).Select(x => x.Id).ToList();
+                        var shelf = ShopShelf(s, shop);
                         var list = b.TryGetValue("buy_goods_list", out var raw) && raw is System.Collections.IEnumerable e ? e.OfType<IReadOnlyDictionary<string, object?>>().ToList() : [];
                         Require(list.Count > 0, "Nothing to buy");
                         foreach (var item in list)
                         {
                             var id = (long)HandlerHelpers.ReadUInt(item, "buy_id");
                             var num = Math.Max(1L, HandlerHelpers.ReadUInt(item, "buy_num", 1));
+                            if (DynamicGoods.TryGetValue(id, out var dg) && dg.ShopId == shop)
+                            {
+                                var boughtDyn = s.Bought.GetValueOrDefault(id)?.Times ?? 0;
+                                Require(boughtDyn + num <= 1, "Purchase limit reached");
+                                if (dg.Cost > 0) costs.Add((dg.CostId, dg.Cost * num));
+                                grants.Add((dg.SkinId, 1));
+                                if (dg.HeroId > 0) unlockedSkins[dg.SkinId] = dg.HeroId;
+                                var recDyn = s.Bought.TryGetValue(id, out var xd) ? xd : s.Bought[id] = new Bought();
+                                recDyn.Times += num;
+                                continue;
+                            }
                             Require(shelf.Contains(id) && Cfg.GetProperty("goods").TryGetProperty(id.ToString(), out var gg), "Good not on the shelf");
                             var g = Cfg.GetProperty("goods").GetProperty(id.ToString());
                             Require(LevelOk(g, level), "Level too low");
@@ -209,15 +331,23 @@ public sealed class ShopSystem(GameAccountRepository accounts, SourceGameConfig 
         var g2 = grants.GroupBy(x => x.Item1).Select(g => (g.Key, g.Sum(x => x.Item2))).Where(x => x.Item2 > 0).ToList();
         if ((c2.Count > 0 || g2.Count > 0) && !await accounts.ConsumeAndGrantAsync(uid, c2, g2, ct))
             return [HandlerHelpers.ResultOnly(codec, r, cmd + 1, cmd == 20012 ? 12u : 2u)];
+        if (unlockedSkins.Count > 0)
+            await accounts.UnlockAllSkinsAsync(uid, unlockedSkins, ct);
         await accounts.SetJsonAsync(uid, "shop_v1", s, ct);
         var frames = await InventorySync.FramesAsync(accounts, codec, r, c2.Concat(g2).Select(x => x.Item1), ct);
         foreach (var shop in changedShops)
             frames.Add(new GameResponse(20005, 0, srv, codec.Encode("sc_20005", new Dictionary<string, object?> { ["changed_shop_info"] = ShopInfo(s, shop) })));
         if (cmd == 20016)
+        {
+            frames.Add(new GameResponse(20007, 0, srv, DynamicCfgFrame().Item2));
             frames.Add(new GameResponse(20009, 0, srv, (await LoginFrameAsync(uid, ct)).Item2));
+        }
         if (cmd == 20012 && g2.Any(x => ItemKinds.IsHero(x.Item1) || ItemKinds.IsPiece(x.Item1)))
             frames.Add(new GameResponse(14019, 0, srv, codec.Encode("sc_14019", new Dictionary<string, object?>
             { ["piece_list"] = (await accounts.GetHeroPiecesAsync(uid, ct)).Select(p => (object)new Dictionary<string, object?> { ["id"] = (uint)p.Hero, ["num"] = (uint)p.Num }).ToArray() })));
+        foreach (var heroId in unlockedSkins.Values.Distinct())
+            if (await LoginBootstrap.BuildSingleHeroNetRecAsync(accounts, uid, heroId, ct) is { } heroRec)
+                frames.Add(new GameResponse(14007, 0, srv, codec.Encode("sc_14007", new Dictionary<string, object?> { ["hero"] = heroRec })));
         frames.Add(HandlerHelpers.Reply(codec, r, cmd + 1, reply));
         return frames;
     }

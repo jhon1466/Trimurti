@@ -548,8 +548,8 @@ public sealed class LoginBootstrap(GameAccountRepository accounts, ProtoCodec co
         frames.AddRange(await new Protocol.Handlers.RelationSystem(accounts, new SourceGameConfig(), codec).LoginFramesAsync(uid, ct));
         // Gacha pools with this player's pity counters and chosen UPs.
         frames.Add(await new Protocol.Handlers.GachaSystem(accounts, new SourceGameConfig(), codec).LoginFrameAsync(uid, ct));
-        // Shops: this player's purchases and the daily shop roll.
-        frames.Add(await new Protocol.Handlers.ShopSystem(accounts, new SourceGameConfig(), codec).LoginFrameAsync(uid, ct));
+        // Shops: dynamic skin shop configs (20007), this player's purchases and the daily shop roll (20009).
+        frames.AddRange(await new Protocol.Handlers.ShopSystem(accounts, new SourceGameConfig(), codec).LoginFramesAsync(uid, ct));
         // AI chips (kernels, secondary, hero AI, support) and Mimir proposals.
         frames.Add(await new Protocol.Handlers.ChipSystem(accounts, new SourceGameConfig(), codec).LoginFrameAsync(uid, ct));
         // 誓约: oaths and their stage tasks.
