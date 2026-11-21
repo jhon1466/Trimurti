@@ -1427,7 +1427,7 @@ public sealed partial class GameAccountRepository
 
     private static async Task<string> ResolveTableInTxAsync(SqliteConnection connection, SqliteTransaction transaction, long itemId, CancellationToken cancellationToken)
     {
-        if (itemId < 100 || itemId is 53029 or 53111) return "currency";
+        if (itemId < 100 || itemId is 53029 or 53111 || SharedConfig.IsCurrencyItem(itemId)) return "currency";
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = transaction;
         cmd.CommandText = "SELECT category FROM item_catalog WHERE id=$id LIMIT 1";

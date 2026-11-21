@@ -196,14 +196,44 @@ public sealed class MatrixMode(GameAccountRepository accounts, SourceGameConfig 
         return p;
     }
 
+    private static IReadOnlyList<(long ItemId, long Count)> PointRankRewards(uint rank) => rank switch
+    {
+        1 => [(2, 10000), (40103, 5)],
+        2 => [(40803, 5), (40503, 5)],
+        3 => [(2, 15000), (40203, 5)],
+        4 => [(40603, 5), (40803, 6)],
+        5 => [(1, 100), (2, 20000)],
+        6 => [(40103, 8), (40503, 6)],
+        7 => [(2, 20000), (40803, 8)],
+        8 => [(40203, 8), (40603, 6)],
+        9 => [(2, 25000), (40503, 8)],
+        10 => [(1, 150), (40803, 10)],
+        11 => [(2, 25000), (40103, 10)],
+        12 => [(40603, 8), (40203, 10)],
+        13 => [(2, 30000), (40503, 10)],
+        14 => [(40803, 12), (40603, 10)],
+        15 => [(1, 200), (2, 30000)],
+        16 => [(40103, 12), (40203, 12)],
+        17 => [(2, 35000), (40803, 15)],
+        18 => [(40503, 12), (40603, 12)],
+        19 => [(2, 40000), (40803, 15)],
+        _ => [(1, 300), (2, 50000)]
+    };
+
     private Dictionary<string, object?> UserRec(State s) => new()
     {
         ["game_state"] = s.GameState,
         ["current_progress"] = ProgressRec(s.Run),
-        ["point_reward_list"] = Section("point_ranks").EnumerateObject().OrderBy(p => uint.Parse(p.Name)).Select(p => (object?)new Dictionary<string, object?>
+        ["point_reward_list"] = Section("point_ranks").EnumerateObject().OrderBy(p => uint.Parse(p.Name)).Select(p =>
         {
-            ["rank"] = uint.Parse(p.Name), ["item_list"] = Array.Empty<object?>(),
-            ["is_got_reward"] = s.RankClaimed.Contains(uint.Parse(p.Name)) ? 1u : 0u, ["need_level"] = 1u
+            var rank = uint.Parse(p.Name);
+            return (object?)new Dictionary<string, object?>
+            {
+                ["rank"] = rank,
+                ["item_list"] = InventorySync.Rewards(PointRankRewards(rank)),
+                ["is_got_reward"] = s.RankClaimed.Contains(rank) ? 1u : 0u,
+                ["need_level"] = 1u
+            };
         }).ToArray(),
         ["terminal"] = GiftList(s.Gifts.Select(g => (g.Key, g.Value))),
         ["unlocked_beacon_id_list"] = Arr(s.Beacons.OrderBy(x => x))
@@ -447,8 +477,8 @@ public sealed class MatrixMode(GameAccountRepository accounts, SourceGameConfig 
             {
                 case 48010: result = await ProgressAsync(uid, s, ReadList(req, "params"), touched, ct); userPush = result == 0; break;
                 case 48012: result = await StartAsync(uid, s, req, ct); userPush = result == 0; break;
-                case 48014: result = await ClaimRanksAsync(uid, s, [HandlerHelpers.ReadUInt(req.Body, "rank")], ct); userPush = result == 0; break;
-                case 48016: result = await ClaimRanksAsync(uid, s, ReadList(req, "rank_list"), ct); userPush = result == 0; break;
+                case 48014: result = await ClaimRanksAsync(uid, s, [HandlerHelpers.ReadUInt(req.Body, "rank")], touched, ct); userPush = result == 0; break;
+                case 48016: result = await ClaimRanksAsync(uid, s, ReadList(req, "rank_list"), touched, ct); userPush = result == 0; break;
                 case 48018:
                 {
                     var beacon = HandlerHelpers.ReadUInt(req.Body, "beacon_id");
@@ -555,15 +585,23 @@ public sealed class MatrixMode(GameAccountRepository accounts, SourceGameConfig 
         return 0;
     }
 
-    private async Task<uint> ClaimRanksAsync(long uid, State s, List<uint> ranks, CancellationToken ct)
+    private async Task<uint> ClaimRanksAsync(long uid, State s, List<uint> ranks, List<long> touched, CancellationToken ct)
     {
         var pt = await Accounts.GetItemCountAsync(uid, Pt, ct);
         if (ranks.Count == 0) return 1;
-        foreach (var rank in ranks)
+        var rewards = new List<(long, long)>();
+        foreach (var rank in ranks.Distinct())
         {
             if (s.RankClaimed.Contains(rank) || !Section("point_ranks").TryGetProperty(rank.ToString(), out var need) || pt < need.GetInt64()) return 1;
+            rewards.AddRange(PointRankRewards(rank));
         }
-        s.RankClaimed.AddRange(ranks);
+        var merged = rewards.GroupBy(x => x.Item1).Select(g => (g.Key, g.Sum(x => x.Item2))).ToList();
+        if (merged.Count > 0)
+        {
+            await Accounts.GrantItemsAsync(uid, merged, ct);
+            touched.AddRange(merged.Select(x => x.Item1));
+        }
+        s.RankClaimed.AddRange(ranks.Distinct());
         return 0;
     }
 

@@ -183,8 +183,8 @@ dotnet build "src/Trimūrti.Server"
 | Contenido semanal | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | 梦境再构, 黑区净化, abismo, 迭代校验, 介质攫取, 因果观测, matriz (矩阵), poliedro, RogueTeam, 心象梦魇. |
 | Encantamiento y equipo (combates) | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Ofertas, refrescos, suit UP, contadores de garantía. |
 | Minijuegos y modos de evento | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Música, vehicle ball, Kadas, 诡谈夜话, autoajedrez (PVE) y modos de evento de los capítulos. |
-| Actividades temporales | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Solo se envían si su actividad está abierta; sorteos, firmas de skin y PT scroll aún sin comandos de juego. |
-| Matriz (矩阵) | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Partida completa; los premios por rango de puntos no dan objetos. |
+| Actividades temporales | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Pruebas de héroe, CultivateHero, PT Scroll, sorteos de skins (68152/68186) y firmas de skin de 7 días (11098–11106) cuando su actividad está abierta. |
+| Matriz (矩阵) | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Partida completa, terminal, faros y premios reales por rango de puntos (48014/48016). |
 | Amigos, chat, gremio y cooperativo | ![No disponible](https://img.shields.io/badge/No%20disponible-ef4444?style=flat-square) | No hay sistema multijugador. |
 | PVP y clasificaciones | ![No disponible](https://img.shields.io/badge/No%20disponible-ef4444?style=flat-square) | No disponible. |
 | Pagos reales | ![No disponible](https://img.shields.io/badge/No%20disponible-ef4444?style=flat-square) | Las compras con dinero real no están disponibles. |
@@ -283,8 +283,8 @@ dotnet build "src/Trimūrti.Server"
 | Weekly content | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | 梦境再构, 黑区净化, abyss, 迭代校验, 介质攫取, 因果观测, matrix (矩阵), polyhedron, RogueTeam, 心象梦魇. |
 | Enchantment and equipment battles | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Offers, refreshes, UP suit, guarantee counters. |
 | Minigames and event modes | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Music, vehicle ball, Kadas, 诡谈夜话, autochess (PVE) and the chapters' event modes. |
-| Limited-time activities | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | Sent only while their activity is open; draws, skin sign-ins and PT scroll still lack their gameplay commands. |
-| Matrix (矩阵) | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | Full run; point-rank rewards give no items. |
+| Limited-time activities | ![Works](https://img.shields.io/badge/Works-22c55e?style=flat-square) | Hero trials, CultivateHero, PT Scroll, skin draws (68152/68186) and 7-day skin sign-ins (11098–11106) when their activity is open. |
+| Matrix (矩阵) | ![Works](https://img.shields.io/badge/Works-22c55e?style=flat-square) | Full run, terminal, beacons and real point-rank item rewards (48014/48016). |
 | Friends, chat, guild and co-op | ![Unavailable](https://img.shields.io/badge/Unavailable-ef4444?style=flat-square) | No multiplayer system. |
 | PVP and rankings | ![Unavailable](https://img.shields.io/badge/Unavailable-ef4444?style=flat-square) | Not available. |
 | Real payments | ![Unavailable](https://img.shields.io/badge/Unavailable-ef4444?style=flat-square) | Real-money purchases are not available. |
@@ -383,8 +383,8 @@ dotnet build "src/Trimūrti.Server"
 | 每周内容 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 梦境再构、黑区净化、失序深阱、迭代校验、介质攫取、因果观测、多维变量（矩阵）、多面体、RogueTeam、心象梦魇。 |
 | 附魔战与装备战 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 关卡刷新、UP 套装、保底计数。 |
 | 小游戏与活动玩法 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 音乐、vehicle ball、Kadas、诡谈夜话、自走棋（PVE）及章节活动玩法。 |
-| 限时活动 | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 仅在活动开启时下发；抽取、皮肤签到、PT 卷轴等玩法指令尚未实现。 |
-| 多维变量（矩阵） | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 完整流程；积分段位奖励不发放道具。 |
+| 限时活动 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 角色试用、角色养成、PT 卷轴、皮肤抽取（68152/68186）与七日皮肤签到（11098–11106）均已支持。 |
+| 多维变量（矩阵） | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 完整流程、终端、信标与积分段位道具奖励（48014/48016）。 |
 | 好友、聊天、公会与协作 | ![不可用](https://img.shields.io/badge/不可用-ef4444?style=flat-square) | 无多人系统。 |
 | PVP 与排行榜 | ![不可用](https://img.shields.io/badge/不可用-ef4444?style=flat-square) | 不可用。 |
 | 真实支付 | ![不可用](https://img.shields.io/badge/不可用-ef4444?style=flat-square) | 不支持真实货币购买。 |
@@ -483,8 +483,8 @@ dotnet build "src/Trimūrti.Server"
 | ウィークリーコンテンツ | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 梦境再构、黑区净化、深淵、迭代校验、介质攫取、因果观测、マトリックス（矩阵）、多面体、RogueTeam、心象梦魇。 |
 | エンチャント戦・装備戦 | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | ステージ更新、UP セット、天井カウンター。 |
 | ミニゲームとイベントモード | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 音楽、vehicle ball、Kadas、诡谈夜话、オートチェス（PVE）、各チャプターのイベントモード。 |
-| 期間限定イベント | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | イベント開催中のみ送信。抽選、スキンログインボーナス、PT スクロールのゲーム内コマンドは未対応。 |
-| マトリックス（矩阵） | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | 一連のプレイが可能。ポイント段位報酬はアイテムなし。 |
+| 期間限定イベント | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | キャラお試し、育成イベント、PT スクロール、スキン抽選（68152/68186）、7日間スキンログイン（11098–11106）に対応。 |
+| マトリックス（矩阵） | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 一連のプレイ、ターミナル、ビーコン、ポイント段位の報酬アイテム（48014/48016）に対応。 |
 | フレンド・チャット・ギルド・協力 | ![未対応](https://img.shields.io/badge/未対応-ef4444?style=flat-square) | マルチプレイ機能なし。 |
 | PVP とランキング | ![未対応](https://img.shields.io/badge/未対応-ef4444?style=flat-square) | 未対応。 |
 | 実際の課金 | ![未対応](https://img.shields.io/badge/未対応-ef4444?style=flat-square) | 実際のお金での購入は不可。 |

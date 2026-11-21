@@ -14,7 +14,7 @@ namespace Trimūrti.Server.Protocol.Handlers;
 public sealed class PlayerFrames(GameAccountRepository accounts, SourceGameConfig config, ProtoCodec codec)
     : EventModeBase(accounts, config, codec, "battle_system_cfg.json"), IStageMode
 {
-    public static readonly uint[] Commands = [81002, 68156, 11036, 64078, 64084, 76152, 76154];
+    public static readonly uint[] Commands = [81002, 68156, 11036, 64078, 64084, 76152, 76154, 68152, 68186, 11098, 11100, 11106];
     private const string Kind = "player_frames_v1";
 
     public sealed class Instance { public uint Id { get; set; } public uint Item { get; set; } public uint Num { get; set; } public List<uint[]> Select { get; set; } = []; }
@@ -297,6 +297,132 @@ public sealed class PlayerFrames(GameAccountRepository accounts, SourceGameConfi
                 frames.Add(HandlerHelpers.Reply(Codec, r, 76155, new Dictionary<string, object?>
                 {
                     ["result"] = 0u, ["reward_list"] = HandlerHelpers.ToItemNetRecList(granted)
+                }));
+                return frames;
+            }
+            case 68152:
+            case 68186:
+            {
+                var aid = HandlerHelpers.ReadUInt(r.Body, "activity_id");
+                var poolId = HandlerHelpers.ReadUInt(r.Body, "pool_id");
+                var count = cmd == 68152 && HandlerHelpers.ReadUInt(r.Body, "drop_type", 1) == 2 ? 10 : 1;
+                var cardIdx = HandlerHelpers.ReadUInt(r.Body, "card_index");
+                var pools = config.Get("skin_draw_pool_cfg.json");
+                if (pools is not { ValueKind: JsonValueKind.Object } root || !root.TryGetProperty(poolId.ToString(), out var pool))
+                    return [HandlerHelpers.ResultOnly(Codec, r, cmd + 1, 2u)];
+                if (!s.Draws.TryGetValue(aid, out var draw)) s.Draws[aid] = draw = new SkinDraw();
+                var costKey = count == 10 ? "cost_ten_times" : "cost_once";
+                var costs = new List<(long, long)>();
+                if (pool.TryGetProperty(costKey, out var ce) && ce.ValueKind == JsonValueKind.Array && ce.GetArrayLength() >= 2)
+                {
+                    var cid = ce[0].GetInt64(); var cnum = ce[1].GetInt64();
+                    if (cid > 0 && cnum > 0) costs.Add((cid, cnum));
+                }
+                var drops = pool.GetProperty("drops");
+                var pickedIds = new List<uint>();
+                var grants = new List<(long, long)>();
+                for (var i = 0; i < count; i++)
+                {
+                    var avail = new List<(uint Id, long Weight, JsonElement Reward)>();
+                    foreach (var dp in drops.EnumerateObject())
+                    {
+                        var did = uint.Parse(dp.Name);
+                        var total = dp.Value.GetProperty("total").GetUInt32();
+                        var taken = draw.Drops.GetValueOrDefault(did) + (uint)pickedIds.Count(x => x == did);
+                        if (taken >= total) continue;
+                        avail.Add((did, Math.Max(1, dp.Value.GetProperty("weight").GetInt64()), dp.Value.GetProperty("reward")));
+                    }
+                    if (avail.Count == 0) break;
+                    var sumW = avail.Sum(x => x.Weight);
+                    var roll = Random.Shared.NextInt64(sumW);
+                    var chosen = avail[0];
+                    foreach (var cand in avail) { roll -= cand.Weight; if (roll < 0) { chosen = cand; break; } }
+                    pickedIds.Add(chosen.Id);
+                    grants.AddRange(Pairs(chosen.Reward));
+                }
+                if (pickedIds.Count == 0)
+                    return [HandlerHelpers.ResultOnly(Codec, r, cmd + 1, 2u)];
+                var mergedGrants = grants.GroupBy(x => x.Item1).Select(g => (g.Key, g.Sum(x => x.Item2))).ToList();
+                if (!await Accounts.ConsumeAndGrantAsync(uid, costs, mergedGrants, ct))
+                    return [HandlerHelpers.ResultOnly(Codec, r, cmd + 1, 12u)];
+                foreach (var did in pickedIds)
+                {
+                    draw.Drops[did] = draw.Drops.GetValueOrDefault(did) + 1;
+                    draw.Last = did;
+                    if (!draw.Already.Contains(did)) draw.Already.Add(did);
+                }
+                await SaveAsync(uid, s, ct);
+                var frames = await SyncAsync(r, costs.Concat(mergedGrants).Select(x => x.Item1).Distinct(), ct);
+                var srv = (ushort)(r.ServerIndex + 1);
+                if (cmd == 68152)
+                {
+                    frames.Add(Push(srv, 68151, new() { ["activity_id"] = aid, ["info"] = draw.Drops.Select(x => (object?)new Dictionary<string, object?> { ["drop_id"] = x.Key, ["num"] = x.Value }).ToArray() }));
+                    frames.Add(HandlerHelpers.Reply(Codec, r, 68153, new Dictionary<string, object?> { ["result"] = 0u, ["drop_list"] = pickedIds.ToArray() }));
+                }
+                else
+                {
+                    frames.Add(Push(srv, 68185, new()
+                    {
+                        ["activity_id"] = aid,
+                        ["info"] = draw.Drops.Select(x => (object?)new Dictionary<string, object?> { ["drop_id"] = x.Key, ["num"] = x.Value }).ToArray(),
+                        ["draw_info2"] = new Dictionary<string, object?> { ["last_drop"] = draw.Last, ["already_drop"] = Arr(draw.Already) }
+                    }));
+                    frames.Add(HandlerHelpers.Reply(Codec, r, 68187, new Dictionary<string, object?>
+                    {
+                        ["result"] = 0u,
+                        ["drop_list"] = pickedIds.Select(did => (object)new Dictionary<string, object?> { ["card_index"] = cardIdx, ["drop_id"] = did }).ToArray()
+                    }));
+                }
+                return frames;
+            }
+            case 11098:
+            case 11100:
+            case 11106:
+            {
+                var aid = HandlerHelpers.ReadUInt(r.Body, "activity_id");
+                if (!s.SkinSigns.TryGetValue(aid, out var g)) s.SkinSigns[aid] = g = new SkinSign();
+                var signCfg = config.Get("sign_cfg.json");
+                (long, long) SignReward(uint id, long fallbackCount) =>
+                    signCfg is { ValueKind: JsonValueKind.Object } sc && sc.TryGetProperty(id.ToString(), out var row)
+                    && row.ValueKind == JsonValueKind.Array && row.GetArrayLength() >= 2
+                        ? (row[0].GetInt64(), row[1].GetInt64()) : (1L, fallbackCount);
+
+                var rewards = new List<(long, long)>();
+                if (cmd == 11098)
+                {
+                    foreach (var id in HandlerHelpers.ReadIdList(r.Body, "id_list").Select(x => (uint)x).Distinct())
+                    {
+                        if (g.Gain.Contains(id)) continue;
+                        if (!g.Unlock.Contains(id)) g.Unlock.Add(id);
+                        g.Gain.Add(id);
+                        rewards.Add(SignReward(id, 100));
+                    }
+                }
+                else if (cmd == 11100)
+                {
+                    var id = HandlerHelpers.ReadUInt(r.Body, "id");
+                    if (id > 0 && !g.Gain.Contains(id))
+                    {
+                        if (!g.Unlock.Contains(id)) g.Unlock.Add(id);
+                        g.Gain.Add(id);
+                        g.Times++;
+                        rewards.Add(SignReward(id, 100));
+                    }
+                }
+                else if (g.Gift == 0)
+                {
+                    g.Gift = 1;
+                    rewards.Add((1L, 200));
+                }
+                if (rewards.Count == 0)
+                    return [HandlerHelpers.Reply(Codec, r, cmd + 1, new Dictionary<string, object?> { ["result"] = 2u, ["rewards"] = Array.Empty<object>() })];
+                var granted = await Accounts.GrantItemsAsync(uid, rewards, ct);
+                await SaveAsync(uid, s, ct);
+                var frames = await SyncAsync(r, granted.Select(x => x.Item1), ct);
+                frames.Add(Push((ushort)(r.ServerIndex + 1), 11097, new() { ["activity_id"] = aid, ["unlock_reward"] = Arr(g.Unlock), ["gain_reward"] = Arr(g.Gain), ["unlock_times"] = g.Times, ["gift_reward"] = g.Gift }));
+                frames.Add(HandlerHelpers.Reply(Codec, r, cmd + 1, new Dictionary<string, object?>
+                {
+                    ["result"] = 0u, ["rewards"] = HandlerHelpers.ToItemNetRecList(granted)
                 }));
                 return frames;
             }
