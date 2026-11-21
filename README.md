@@ -179,7 +179,7 @@ dotnet build "src/Trimūrti.Server"
 | Firmas diarias | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Firma mensual de 31 días con tabla de premios, firma de 7 días y firmas acumulativas con sincronización en vivo. |
 | Batallas | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Servidor de batalla UDP local, resultado real, estrellas, botín, barrido. |
 | Capítulos e historia | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Mapa de capítulos, tesoros, historias. |
-| Dormitorio, comedor e ídolos | ![Parcial](https://img.shields.io/badge/Parcial-eab308?style=flat-square) | Habitaciones, muebles, comedor, encargos, entrenamiento de ídolos, PVE y tablón semanal. Sin PVP de ídolos. |
+| Dormitorio, comedor e ídolos | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Habitaciones, muebles, minijuegos, comedor, encargos, entrenamiento de ídolos, PVE, PVP local contra rivales IA (con historial y repetición) y tablón semanal. |
 | Contenido semanal | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | 梦境再构, 黑区净化, abismo, 迭代校验, 介质攫取, 因果观测, matriz (矩阵), poliedro, RogueTeam, 心象梦魇. |
 | Encantamiento y equipo (combates) | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Ofertas, refrescos, suit UP, contadores de garantía. |
 | Minijuegos y modos de evento | ![Funciona](https://img.shields.io/badge/Funciona-22c55e?style=flat-square) | Música, vehicle ball, Kadas, 诡谈夜话, autoajedrez (PVE) y modos de evento de los capítulos. |
@@ -279,7 +279,7 @@ dotnet build "src/Trimūrti.Server"
 | Daily sign-in | ![Works](https://img.shields.io/badge/Works-22c55e?style=flat-square) | 31-day monthly sign-in reward table, 7-day sign-in and cumulative sign-ins with live inventory sync. |
 | Battles | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Local UDP battle server, real result, stars, drops, sweep. |
 | Chapters and story | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Chapter map, treasures, stories. |
-| Dorm, canteen and idols | ![Partial](https://img.shields.io/badge/Partial-eab308?style=flat-square) | Rooms, furniture, canteen, entrusts, idol training, PVE and weekly board. No idol PVP. |
+| Dorm, canteen and idols | ![Works](https://img.shields.io/badge/Works-22c55e?style=flat-square) | Rooms, furniture, minigames, canteen, entrusts, idol training, PVE, local idol PVP against AI rivals (with history & replays) and weekly board. |
 | Weekly content | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | 梦境再构, 黑区净化, abyss, 迭代校验, 介质攫取, 因果观测, matrix (矩阵), polyhedron, RogueTeam, 心象梦魇. |
 | Enchantment and equipment battles | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Offers, refreshes, UP suit, guarantee counters. |
 | Minigames and event modes | ![Working](https://img.shields.io/badge/Working-22c55e?style=flat-square) | Music, vehicle ball, Kadas, 诡谈夜话, autochess (PVE) and the chapters' event modes. |
@@ -379,7 +379,7 @@ dotnet build "src/Trimūrti.Server"
 | 签到 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 31 天月签到奖励表、七日签到与累计签到，领取后实时同步背包。 |
 | 战斗 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 本地 UDP 战斗服务器、真实结果、星级、掉落、扫荡。 |
 | 章节与剧情 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 章节地图、宝箱、剧情。 |
-| 宿舍、餐厅与偶像 | ![部分](https://img.shields.io/badge/部分-eab308?style=flat-square) | 房间、家具、餐厅、委托、偶像训练、PVE 与每周公告板。暂无偶像 PVP。 |
+| 宿舍、餐厅与偶像 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 房间、家具、小游戏、餐厅、委托、偶像训练、PVE、本地 AI 偶像 PVP（含战绩与回放）及每周公告板。 |
 | 每周内容 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 梦境再构、黑区净化、失序深阱、迭代校验、介质攫取、因果观测、多维变量（矩阵）、多面体、RogueTeam、心象梦魇。 |
 | 附魔战与装备战 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 关卡刷新、UP 套装、保底计数。 |
 | 小游戏与活动玩法 | ![可用](https://img.shields.io/badge/可用-22c55e?style=flat-square) | 音乐、vehicle ball、Kadas、诡谈夜话、自走棋（PVE）及章节活动玩法。 |
@@ -479,7 +479,7 @@ dotnet build "src/Trimūrti.Server"
 | ログインボーナス | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 31 日間の月間ログイン報酬テーブル、7 日間および累計ログイン（即時同期対応）。 |
 | バトル | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | ローカル UDP バトルサーバー、実際の結果、星、ドロップ、スイープ。 |
 | チャプターとストーリー | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | チャプターマップ、宝箱、ストーリー。 |
-| 寮・食堂・アイドル | ![一部](https://img.shields.io/badge/一部-eab308?style=flat-square) | 部屋、家具、食堂、依頼、アイドル育成、PVE、週間掲示板。アイドル PVP は未対応。 |
+| 寮・食堂・アイドル | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 部屋、家具、ミニゲーム、食堂、依頼、アイドル育成、PVE、AI ライバルとのローカルアイドル PVP（履歴・リプレイ付き）、週間掲示板。 |
 | ウィークリーコンテンツ | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 梦境再构、黑区净化、深淵、迭代校验、介质攫取、因果观测、マトリックス（矩阵）、多面体、RogueTeam、心象梦魇。 |
 | エンチャント戦・装備戦 | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | ステージ更新、UP セット、天井カウンター。 |
 | ミニゲームとイベントモード | ![対応](https://img.shields.io/badge/対応-22c55e?style=flat-square) | 音楽、vehicle ball、Kadas、诡谈夜话、オートチェス（PVE）、各チャプターのイベントモード。 |

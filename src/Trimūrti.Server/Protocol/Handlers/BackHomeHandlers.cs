@@ -58,7 +58,39 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
         public int PvpWin { get; set; }
     }
     public sealed class PveRec { public long Score { get; set; } public bool Clear { get; set; } }
-    public sealed class Battle { public long Stage { get; set; } public long Atk { get; set; } public long Def { get; set; } public long AtkPec { get; set; } public long DefPec { get; set; } }
+    public sealed class RoundPair { public uint Atk { get; set; } public uint Def { get; set; } }
+    public sealed class Battle
+    {
+        public long Stage { get; set; }
+        public long Atk { get; set; }
+        public long Def { get; set; }
+        public long AtkPec { get; set; }
+        public long DefPec { get; set; }
+        public bool IsPvp { get; set; }
+        public uint BattleType { get; set; }
+        public ulong DefenderUid { get; set; }
+        public string DefenderNick { get; set; } = "";
+        public uint DefenderIcon { get; set; }
+        public uint AttackerSkin { get; set; }
+        public uint DefenderSkin { get; set; }
+        public List<RoundPair> Rounds { get; set; } = [];
+    }
+    public sealed class PvpRecord
+    {
+        public ulong BattleId { get; set; }
+        public uint BattleType { get; set; }
+        public uint Timestamp { get; set; }
+        public uint Result { get; set; }
+        public ulong OpponentUid { get; set; }
+        public string OpponentNick { get; set; } = "";
+        public uint OpponentIcon { get; set; }
+        public uint StageId { get; set; }
+        public uint AttackerSkin { get; set; }
+        public uint DefenderSkin { get; set; }
+        public long Atk { get; set; }
+        public long Def { get; set; }
+        public List<RoundPair> Rounds { get; set; } = [];
+    }
     public sealed class State
     {
         public bool Init { get; set; }
@@ -97,6 +129,7 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
         public Week ThisWeek { get; set; } = new();
         public Week LastWeek { get; set; } = new();
         public Battle? Pending1 { get; set; }
+        public List<PvpRecord> PvpHistory { get; set; } = [];
     }
 
     // ---------- config helpers ----------
@@ -501,6 +534,46 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
     }
 
     private bool IdolUsable(long hero) => (Get("heroes", hero) ?? Get("heroes", Arch(hero))) is { } c && I(c, "idol_usable") == 1 && c.GetProperty("idol_base_attribute").ValueKind == JsonValueKind.Array;
+
+    private sealed record PvpBot(ulong Uid, string Nick, uint Icon, long HeroId, List<uint> Attrs);
+
+    private List<PvpBot> IdolPvpOpponents()
+    {
+        var usable = Cfg.GetProperty("heroes").EnumerateObject()
+            .Where(p => I(p.Value, "idol_usable") == 1 && p.Value.GetProperty("idol_base_attribute").ValueKind == JsonValueKind.Array)
+            .Select(p => (Hero: long.Parse(p.Name), Attrs: p.Value.GetProperty("idol_base_attribute").EnumerateArray().Select(x => (uint)x[0].GetInt64()).ToList()))
+            .OrderBy(x => x.Hero).ToList();
+        var scales = new[] { 0.85, 0.95, 1.05, 1.15, 1.30, 1.50 };
+        var names = new[] { "Verthandi AI", "Poseidon AI", "Tsukuyomi AI", "Osiris AI", "Hera AI", "Hades AI" };
+        var bots = new List<PvpBot>();
+        for (var i = 0; i < Math.Min(scales.Length, usable.Count); i++)
+        {
+            var pick = usable[(i * 7) % usable.Count];
+            var attrs = pick.Attrs.Select(v => (uint)Math.Max(100, Math.Round(v * scales[i]))).ToList();
+            bots.Add(new PvpBot(900001UL + (ulong)i, names[i], (uint)(2100000 + pick.Hero * 10 + 1), pick.Hero, attrs));
+        }
+        return bots;
+    }
+
+    private static object[] BuildRoundFrames(List<RoundPair> rounds)
+    {
+        var list = new List<object>(rounds.Count);
+        for (var i = 0; i < rounds.Count; i++)
+        {
+            var k = i % 5;
+            static object Score(uint v) => new Dictionary<string, object?> { ["peculiarity_score"] = v, ["skill_score"] = 0, ["sum_score"] = v };
+            object Act() => new Dictionary<string, object?> { ["atk_style_id"] = (uint)(k % 3 + 1), ["skill_id"] = 0u, ["index_list"] = new[] { 1u } };
+            list.Add(new Dictionary<string, object?>
+            {
+                ["round_index"] = (uint)(i + 1),
+                ["attack_user_action"] = Act(),
+                ["defend_user_action"] = Act(),
+                ["attack_user_score"] = Score(rounds[i].Atk),
+                ["defend_user_score"] = Score(rounds[i].Def)
+            });
+        }
+        return list.ToArray();
+    }
 
     // ---------- operations ----------
     public async Task<IReadOnlyList<GameResponse>> HandleAsync(GameRequest r, uint cmd, CancellationToken ct)
@@ -1019,18 +1092,48 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
                         var bt = s.Pending1!;
                         s.Pending1 = null;
                         var win = bt.Atk > bt.Def;
-                        var prev = s.Pve.GetValueOrDefault(bt.Stage) ?? new PveRec();
-                        s.Pve[bt.Stage] = new PveRec { Score = Math.Max(prev.Score, bt.Atk), Clear = prev.Clear || win };
                         object Side(long v) => new Dictionary<string, object?> { ["sum_score"] = (uint)v, ["peculiarity_score"] = (uint)v, ["skill_add_score"] = 0u, ["skill_decrease_score"] = 0u };
                         reply["battle_result"] = win ? 1u : 2u;
                         reply["attacker_data"] = Side(bt.Atk);
                         reply["defender_data"] = Side(bt.Def);
-                        var best = s.Pve[bt.Stage].Score;
-                        var catalog = config.Get("assignment_cfg.json");
-                        var reached = L(Get("idol_pve", bt.Stage)!.Value.GetProperty("taskIDList")).Where(id => catalog is { } cat && cat.TryGetProperty(id.ToString(), out var tc)
-                            && tc.TryGetProperty("param", out var p) && L(p) is { Count: >= 2 } ps && ps[0] == bt.Stage && best >= ps[1]).ToList();
-                        task = t => { var c = tasks.Fulfil(t, reached); c.AddRange(tasks.Trigger(t, 2011)); if (win) c.AddRange(tasks.Trigger(t, 2010)); return c; };
-                        pushes.Add(new GameResponse(58189, 0, srv, codec.Encode("sc_58189", (IReadOnlyDictionary<string, object?>)PveChapters(s))));
+                        if (bt.IsPvp)
+                        {
+                            W(s).Pvp++;
+                            if (win) W(s).PvpWin++;
+                            var rankGain = win ? 40L : 20L;
+                            grants.Add((RankItem, rankGain));
+                            s.PvpHistory.Insert(0, new PvpRecord
+                            {
+                                BattleId = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                                BattleType = bt.BattleType,
+                                Timestamp = (uint)now,
+                                Result = win ? 1u : 2u,
+                                OpponentUid = bt.DefenderUid,
+                                OpponentNick = bt.DefenderNick,
+                                OpponentIcon = bt.DefenderIcon,
+                                StageId = (uint)bt.Stage,
+                                AttackerSkin = bt.AttackerSkin,
+                                DefenderSkin = bt.DefenderSkin,
+                                Atk = bt.Atk,
+                                Def = bt.Def,
+                                Rounds = bt.Rounds
+                            });
+                            if (s.PvpHistory.Count > 20) s.PvpHistory.RemoveRange(20, s.PvpHistory.Count - 20);
+                            var newPts = await accounts.GetItemCountAsync(uid, RankItem, ct) + rankGain;
+                            pushes.Add(new GameResponse(58191, 0, srv, codec.Encode("sc_58191", (IReadOnlyDictionary<string, object?>)Rank(s, newPts))));
+                            task = t => { var c = tasks.Trigger(t, 2011); if (win) c.AddRange(tasks.Trigger(t, 2010)); return c; };
+                        }
+                        else
+                        {
+                            var prev = s.Pve.GetValueOrDefault(bt.Stage) ?? new PveRec();
+                            s.Pve[bt.Stage] = new PveRec { Score = Math.Max(prev.Score, bt.Atk), Clear = prev.Clear || win };
+                            var best = s.Pve[bt.Stage].Score;
+                            var catalog = config.Get("assignment_cfg.json");
+                            var reached = L(Get("idol_pve", bt.Stage)!.Value.GetProperty("taskIDList")).Where(id => catalog is { } cat && cat.TryGetProperty(id.ToString(), out var tc)
+                                && tc.TryGetProperty("param", out var p) && L(p) is { Count: >= 2 } ps && ps[0] == bt.Stage && best >= ps[1]).ToList();
+                            task = t => { var c = tasks.Fulfil(t, reached); c.AddRange(tasks.Trigger(t, 2011)); if (win) c.AddRange(tasks.Trigger(t, 2010)); return c; };
+                            pushes.Add(new GameResponse(58189, 0, srv, codec.Encode("sc_58189", (IReadOnlyDictionary<string, object?>)PveChapters(s))));
+                        }
                         break;
                     }
                 case 58192:
@@ -1085,11 +1188,85 @@ public sealed class BackHome(GameAccountRepository accounts, SourceGameConfig co
                     Require(s.Dances.Remove(G(b, "pos")), "Sequence not found");
                     pushes.Add(new GameResponse(58195, 0, srv, codec.Encode("sc_58195", (IReadOnlyDictionary<string, object?>)Sequences(s))));
                     break;
-                case 58180: reply["pvp_fight_list"] = Array.Empty<object>(); save = false; break;
-                case 58182: reply["history_mini_battle_list"] = Array.Empty<object>(); save = false; break;
+                case 58180:
+                    {
+                        reply["pvp_fight_list"] = IdolPvpOpponents().Select(bot => (object)new Dictionary<string, object?>
+                        {
+                            ["user_id"] = bot.Uid,
+                            ["profile_base"] = new Dictionary<string, object?> { ["nick"] = bot.Nick, ["icon"] = bot.Icon, ["icon_frame"] = 2001u },
+                            ["hero_list"] = new object[] { new Dictionary<string, object?> { ["skin_id"] = (uint)bot.HeroId, ["attribute_list"] = bot.Attrs.ToArray() } }
+                        }).ToArray();
+                        save = false;
+                        break;
+                    }
+                case 58182:
+                    {
+                        reply["history_mini_battle_list"] = s.PvpHistory.Select(rec => (object)new Dictionary<string, object?>
+                        {
+                            ["battle_id"] = rec.BattleId,
+                            ["battle_type"] = rec.BattleType,
+                            ["timestamp"] = rec.Timestamp,
+                            ["is_attacker"] = true,
+                            ["battle_result"] = rec.Result,
+                            ["another_user_id"] = rec.OpponentUid,
+                            ["another_profile_base"] = new Dictionary<string, object?> { ["nick"] = rec.OpponentNick, ["icon"] = rec.OpponentIcon, ["icon_frame"] = 2001u }
+                        }).ToArray();
+                        save = false;
+                        break;
+                    }
                 case 58160:
+                    {
+                        var defUid = HandlerHelpers.ReadULong(b, "defender_uid");
+                        var battleType = G(b, "battle_type");
+                        var stage = (long)G(b, "stage_id");
+                        if (stage == 0) stage = Convert.ToInt64(PvpStage()["stage_id"] ?? 10001u);
+                        var bots = IdolPvpOpponents();
+                        var bot = bots.FirstOrDefault(x => x.Uid == defUid) ?? bots.First();
+                        var hero = s.Attack.FirstOrDefault(x => owned.Contains(Arch(x)) && IdolUsable(x));
+                        if (hero == 0) hero = s.CampPos.OrderBy(p => p.Key).Select(p => p.Value).FirstOrDefault(IdolUsable);
+                        if (hero == 0) hero = owned.FirstOrDefault(IdolUsable);
+                        Require(hero != 0, "No idol team");
+                        var attrs = IdolAttributes(s, hero);
+                        var rounds = new List<RoundPair>(5);
+                        long atk = 0, def = 0;
+                        for (var i = 0; i < 5; i++)
+                        {
+                            var a = attrs[i % attrs.Count];
+                            var d = bot.Attrs[i % bot.Attrs.Count];
+                            atk += a; def += d;
+                            rounds.Add(new RoundPair { Atk = a, Def = d });
+                        }
+                        var atkSkin = (uint)((s.Heroes.GetValueOrDefault(Arch(hero))?.Skin ?? 0) is var sk and > 0 ? sk : hero);
+                        var defSkin = (uint)bot.HeroId;
+                        s.Pending1 = new Battle
+                        {
+                            Stage = stage, Atk = atk, Def = def, IsPvp = true, BattleType = battleType == 0 ? 1u : battleType,
+                            DefenderUid = bot.Uid, DefenderNick = bot.Nick, DefenderIcon = bot.Icon,
+                            AttackerSkin = atkSkin, DefenderSkin = defSkin, Rounds = rounds
+                        };
+                        reply["prepare_info"] = new Dictionary<string, object?> { ["attacker_active_buff_list"] = Array.Empty<ulong>(), ["defender_active_buff_list"] = Array.Empty<ulong>() };
+                        reply["round_list"] = BuildRoundFrames(rounds);
+                        reply["attacker_skin_id"] = atkSkin;
+                        reply["defender_skin_id"] = defSkin;
+                        break;
+                    }
                 case 58184:
-                    throw new ModeError("No opponents on a private server");
+                    {
+                        var bid = HandlerHelpers.ReadULong(b, "battle_id");
+                        var rec = s.PvpHistory.FirstOrDefault(x => x.BattleId == bid);
+                        Require(rec is not null, "Replay not found");
+                        object Side(long v) => new Dictionary<string, object?> { ["sum_score"] = (uint)v, ["peculiarity_score"] = (uint)v, ["skill_add_score"] = 0u, ["skill_decrease_score"] = 0u };
+                        reply["prepare_info"] = new Dictionary<string, object?> { ["attacker_active_buff_list"] = Array.Empty<ulong>(), ["defender_active_buff_list"] = Array.Empty<ulong>() };
+                        reply["round_list"] = BuildRoundFrames(rec!.Rounds);
+                        reply["attacker_skin_id"] = rec.AttackerSkin;
+                        reply["defender_skin_id"] = rec.DefenderSkin;
+                        reply["stage_id"] = rec.StageId;
+                        reply["battle_result"] = rec.Result;
+                        reply["attacker_data"] = Side(rec.Atk);
+                        reply["defender_data"] = Side(rec.Def);
+                        save = false;
+                        break;
+                    }
                 // ----- idol DIY dance sharing & collection (58204-58216) -----
                 case 58204:
                     reply["uid"] = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
