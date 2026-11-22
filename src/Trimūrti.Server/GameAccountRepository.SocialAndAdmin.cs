@@ -543,25 +543,38 @@ public sealed partial class GameAccountRepository
         try
         {
             await using var connection = await OpenAsync(cancellationToken);
-            await using var tx = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken);
-            string[] tables =
-            [
-                "hero", "material", "currency", "equip", "servant", "mail", "newbie_activity",
-                "hero_favorites", "hero_warp", "hero_archive_state", "trimurti_claim",
-                "formation_team", "boss_challenge_scores", "users"
-            ];
-            var affected = 0;
+            var tables = new List<string>();
+            await using (var listCmd = connection.CreateCommand())
+            {
+                listCmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'";
+                await using var reader = await listCmd.ExecuteReaderAsync(cancellationToken);
+                while (await reader.ReadAsync(cancellationToken))
+                    tables.Add(reader.GetString(0));
+            }
+
+            var uidTables = new List<string>();
             foreach (var table in tables)
             {
-                await using var check = connection.CreateCommand();
-                check.Transaction = tx;
-                check.CommandText = "SELECT 1 FROM sqlite_master WHERE type='table' AND name=$t";
-                check.Parameters.AddWithValue("$t", table);
-                if (await check.ExecuteScalarAsync(cancellationToken) is null) continue;
+                await using var pragma = connection.CreateCommand();
+                pragma.CommandText = $"PRAGMA table_info(\"{table.Replace("\"", "\"\"")}\")";
+                await using var r = await pragma.ExecuteReaderAsync(cancellationToken);
+                while (await r.ReadAsync(cancellationToken))
+                {
+                    if (string.Equals(r.GetString(1), "uid", StringComparison.OrdinalIgnoreCase))
+                    {
+                        uidTables.Add(table);
+                        break;
+                    }
+                }
+            }
 
+            await using var tx = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken);
+            var affected = 0;
+            foreach (var table in uidTables)
+            {
                 await using var del = connection.CreateCommand();
                 del.Transaction = tx;
-                del.CommandText = $"DELETE FROM {table} WHERE uid=$uid";
+                del.CommandText = $"DELETE FROM \"{table.Replace("\"", "\"\"")}\" WHERE uid=$uid";
                 del.Parameters.AddWithValue("$uid", uid);
                 affected += await del.ExecuteNonQueryAsync(cancellationToken);
             }

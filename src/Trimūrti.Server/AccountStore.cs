@@ -47,6 +47,7 @@ public sealed class AccountStore
             command.ExecuteNonQuery();
         }
         MigrateOutOfRangeUids(connection);
+        CleanupOrphanedAuth(connection);
         var tableCount = Convert.ToInt32(Scalar(connection, "SELECT COUNT(*) FROM sqlite_master WHERE type='table'"));
         logger.LogInformation("Trimūrti SQLite initialized at {DatabasePath} ({TableCount} tables)", _path, tableCount);
     }
@@ -136,6 +137,11 @@ public sealed class AccountStore
             reader.Close();
             var actual = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, HashAlgorithmName.SHA256, HashSize);
             if (!CryptographicOperations.FixedTimeEquals(actual, expected)) return null;
+            if (ScalarUidExists(connection, "users", uid) == false)
+            {
+                PurgeUidRows(connection, uid);
+                return null;
+            }
             using (var transaction = connection.BeginTransaction())
             {
                 EnsureLobbyBaseline(connection, transaction, uid);
@@ -320,6 +326,83 @@ public sealed class AccountStore
     private static object? Scalar(SqliteConnection connection, string sql)
     {
         using var command = connection.CreateCommand(); command.CommandText = sql; return command.ExecuteScalar();
+    }
+
+    private static bool ScalarUidExists(SqliteConnection connection, string table, long uid)
+    {
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = $"SELECT 1 FROM \"{table.Replace("\"", "\"\"")}\" WHERE uid=$uid LIMIT 1";
+        cmd.Parameters.AddWithValue("$uid", uid);
+        return cmd.ExecuteScalar() is not null;
+    }
+
+    private static List<string> FindTablesWithUidColumn(SqliteConnection connection)
+    {
+        var allTables = new List<string>();
+        using (var cmd = connection.CreateCommand())
+        {
+            cmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'";
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read()) allTables.Add(reader.GetString(0));
+        }
+        var targetTables = new List<string>();
+        foreach (var table in allTables)
+        {
+            using var pragma = connection.CreateCommand();
+            pragma.CommandText = $"PRAGMA table_info(\"{table.Replace("\"", "\"\"")}\")";
+            using var r = pragma.ExecuteReader();
+            while (r.Read())
+            {
+                if (string.Equals(r.GetString(1), "uid", StringComparison.OrdinalIgnoreCase))
+                {
+                    targetTables.Add(table);
+                    break;
+                }
+            }
+        }
+        return targetTables;
+    }
+
+    private static void PurgeUidRows(SqliteConnection connection, long uid)
+    {
+        var targetTables = FindTablesWithUidColumn(connection);
+        using var tx = connection.BeginTransaction();
+        foreach (var table in targetTables)
+        {
+            using var del = connection.CreateCommand();
+            del.Transaction = tx;
+            del.CommandText = $"DELETE FROM \"{table.Replace("\"", "\"\"")}\" WHERE uid=$uid";
+            del.Parameters.AddWithValue("$uid", uid);
+            del.ExecuteNonQuery();
+        }
+        tx.Commit();
+    }
+
+    private static void CleanupOrphanedAuth(SqliteConnection connection)
+    {
+        var orphans = new List<long>();
+        using (var cmd = connection.CreateCommand())
+        {
+            cmd.CommandText = "SELECT uid FROM trimurti_auth WHERE uid NOT IN (SELECT uid FROM users)";
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read()) orphans.Add(reader.GetInt64(0));
+        }
+        if (orphans.Count == 0) return;
+
+        var targetTables = FindTablesWithUidColumn(connection);
+        using var tx = connection.BeginTransaction();
+        foreach (var uid in orphans)
+        {
+            foreach (var table in targetTables)
+            {
+                using var del = connection.CreateCommand();
+                del.Transaction = tx;
+                del.CommandText = $"DELETE FROM \"{table.Replace("\"", "\"\"")}\" WHERE uid=$uid";
+                del.Parameters.AddWithValue("$uid", uid);
+                del.ExecuteNonQuery();
+            }
+        }
+        tx.Commit();
     }
 
     private static long NextUid(SqliteConnection connection)
