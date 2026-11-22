@@ -66,8 +66,8 @@ fn manager_stop(state: State<'_, manager::ManagerState>) -> Result<String, Strin
 }
 
 #[tauri::command]
-fn manager_launch_game() -> Result<String, String> {
-    manager::launch_game()
+fn manager_launch_game(game_dir: Option<String>) -> Result<String, String> {
+    manager::launch_game(game_dir)
 }
 
 #[tauri::command]
@@ -76,13 +76,19 @@ fn manager_log_tail(lines: Option<usize>) -> String {
 }
 
 #[tauri::command]
-fn manager_save_settings(game_dir: String, workspace_dir: String) -> Result<(), String> {
+fn manager_save_settings(
+    state: State<'_, manager::ManagerState>,
+    game_dir: String,
+    workspace_dir: String,
+) -> Result<manager::Status, String> {
     let mut s = manager::load_settings();
-    s.game_dir = game_dir.trim().to_string();
-    if !workspace_dir.trim().is_empty() {
-        s.workspace_dir = workspace_dir.trim().to_string();
+    s.game_dir = manager::normalize_game_dir(&game_dir);
+    let normalized_ws = manager::normalize_dir_input(&workspace_dir);
+    if !normalized_ws.is_empty() {
+        s.workspace_dir = normalized_ws;
     }
-    manager::save_settings(&s)
+    manager::save_settings(&s)?;
+    Ok(manager::get_status(&state))
 }
 
 #[tauri::command]

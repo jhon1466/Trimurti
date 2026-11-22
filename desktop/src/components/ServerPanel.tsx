@@ -50,6 +50,8 @@ export default function ServerPanel(props: {
   const [checkedAt, setCheckedAt] = createSignal('');
   let timer: number | undefined;
   let updateTimer: number | undefined;
+  let saveTimer: number | undefined;
+  let pathsInitialized = false;
 
   const short = (sha?: string) => (sha ? sha.slice(0, 7) : '—');
   const busy = () => working() || updating() || !!status()?.stage;
@@ -90,12 +92,56 @@ export default function ServerPanel(props: {
       const s = await invoke<ServerStatus>('manager_status');
       setStatus(s);
       props.onStatusChange?.(s);
-      if (!gameDir() && s.settings.gameDir) setGameDir(s.settings.gameDir);
-      if (!workspaceDir() && s.settings.workspaceDir) setWorkspaceDir(s.settings.workspaceDir);
+      if (!pathsInitialized) {
+        pathsInitialized = true;
+        setGameDir(s.settings.gameDir);
+        setWorkspaceDir(s.settings.workspaceDir);
+      } else {
+        if (!gameDir() && s.settings.gameDir) setGameDir(s.settings.gameDir);
+        if (!workspaceDir() && s.settings.workspaceDir) setWorkspaceDir(s.settings.workspaceDir);
+      }
       setLog(await invoke<string>('manager_log_tail', { lines: 140 }));
     } catch (e) {
       props.notify(String(e), true);
     }
+  }
+
+  async function persistPaths(showToast: boolean) {
+    if (saveTimer) {
+      window.clearTimeout(saveTimer);
+      saveTimer = undefined;
+    }
+    const nextGame = gameDir().trim();
+    const nextWs = workspaceDir().trim();
+    const cur = status()?.settings;
+    if (!showToast && cur && cur.gameDir === nextGame && cur.workspaceDir === nextWs) {
+      return;
+    }
+    try {
+      const s = await invoke<ServerStatus>('manager_save_settings', {
+        gameDir: nextGame,
+        workspaceDir: nextWs,
+      });
+      setStatus(s);
+      props.onStatusChange?.(s);
+      if (showToast || s.gameFound) {
+        if (s.settings.gameDir !== gameDir()) setGameDir(s.settings.gameDir);
+      }
+      if (showToast && s.settings.workspaceDir !== workspaceDir()) {
+        setWorkspaceDir(s.settings.workspaceDir);
+      }
+      if (showToast) {
+        if (nextGame && !s.gameFound) props.notify(t('gameNotFoundHint'), true);
+        else props.notify(t('pathsSaved'));
+      }
+    } catch (e) {
+      props.notify(String(e), true);
+    }
+  }
+
+  function scheduleAutoSave() {
+    if (saveTimer) window.clearTimeout(saveTimer);
+    saveTimer = window.setTimeout(() => void persistPaths(false), 450);
   }
 
   async function runAction(fn: () => Promise<unknown>, okMsg?: string) {
@@ -108,12 +154,13 @@ export default function ServerPanel(props: {
       props.notify(String(e), true);
     } finally {
       setWorking(false);
-      void refresh();
+      await refresh();
     }
   }
 
   const start = () =>
     runAction(async () => {
+      await persistPaths(false);
       const msg = await invoke<string>('manager_start');
       window.setTimeout(props.onStarted, 3000);
       void checkUpdate(true);
@@ -121,12 +168,12 @@ export default function ServerPanel(props: {
     });
 
   const stop = () => runAction(() => invoke<string>('manager_stop'));
-  const launchGame = () => runAction(() => invoke<string>('manager_launch_game'));
+  const launchGame = () =>
+    runAction(() => invoke<string>('manager_launch_game', { gameDir: gameDir().trim() || null }));
   const savePaths = () =>
-    runAction(
-      () => invoke('manager_save_settings', { gameDir: gameDir(), workspaceDir: workspaceDir() }),
-      t('pathsSaved'),
-    );
+    runAction(async () => {
+      await persistPaths(true);
+    });
 
   function copyDiag() {
     const s = status();
@@ -150,6 +197,7 @@ export default function ServerPanel(props: {
   onCleanup(() => {
     if (timer) window.clearInterval(timer);
     if (updateTimer) window.clearInterval(updateTimer);
+    if (saveTimer) window.clearTimeout(saveTimer);
   });
 
   return (
@@ -214,16 +262,36 @@ export default function ServerPanel(props: {
             <input
               class="input-field"
               value={gameDir()}
-              onInput={(e) => setGameDir(e.currentTarget.value)}
-              placeholder="C:\Program Files\AetherGazerLauncher\AetherGazer"
+              onInput={(e) => {
+                setGameDir(e.currentTarget.value);
+                scheduleAutoSave();
+              }}
+              onBlur={() => void persistPaths(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void persistPaths(true);
+              }}
+              placeholder="C:\Program Files\AetherGazer"
             />
+            <Show when={gameDir().trim().length > 0}>
+              <span class={`text-[10px] ${status()?.gameFound ? 'text-emerald-300' : 'text-amber-300'}`}>
+                <i class={`fa-solid ${status()?.gameFound ? 'fa-circle-check' : 'fa-triangle-exclamation'}`} />{' '}
+                {status()?.gameFound ? t('gameFoundHint') : t('gameNotFoundHint')}
+              </span>
+            </Show>
           </label>
           <label class="flex flex-col gap-1.5 text-[11px] text-ice-300">
             <span>{t('serverDirLabel')}</span>
             <input
               class="input-field"
               value={workspaceDir()}
-              onInput={(e) => setWorkspaceDir(e.currentTarget.value)}
+              onInput={(e) => {
+                setWorkspaceDir(e.currentTarget.value);
+                scheduleAutoSave();
+              }}
+              onBlur={() => void persistPaths(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void persistPaths(true);
+              }}
               placeholder="%APPDATA%\TrimurtiGMTools\server"
             />
           </label>

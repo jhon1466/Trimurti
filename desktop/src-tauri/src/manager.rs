@@ -58,17 +58,76 @@ fn default_true() -> bool {
     true
 }
 
+const DEFAULT_GAME_DIRS: &[&str] = &[
+    r"C:\Program Files\AetherGazerLauncher\AetherGazer",
+    r"C:\Program Files\AetherGazer",
+    r"C:\Program Files (x86)\AetherGazerLauncher\AetherGazer",
+    r"C:\Program Files (x86)\AetherGazer",
+    r"C:\Games\AetherGazer",
+    r"D:\AetherGazer",
+    r"D:\Games\AetherGazer",
+];
+
+fn detect_default_game_dir() -> String {
+    for dir in DEFAULT_GAME_DIRS {
+        if Path::new(dir).join("AetherGazer.exe").is_file() {
+            return (*dir).to_string();
+        }
+    }
+    String::new()
+}
+
+pub fn normalize_dir_input(raw: &str) -> String {
+    let trimmed = raw
+        .trim()
+        .trim_matches(|c| c == '"' || c == '\'')
+        .trim();
+    if trimmed.is_empty() {
+        return String::new();
+    }
+    // Conserva la barra raíz en rutas como "C:\"
+    if trimmed.len() > 3 {
+        trimmed.trim_end_matches(['\\', '/']).to_string()
+    } else {
+        trimmed.to_string()
+    }
+}
+
+pub fn normalize_game_dir(raw: &str) -> String {
+    let clean = normalize_dir_input(raw);
+    if clean.is_empty() {
+        return String::new();
+    }
+    let path = Path::new(&clean);
+    if path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .is_some_and(|n| n.eq_ignore_ascii_case("AetherGazer.exe"))
+    {
+        if let Some(parent) = path.parent() {
+            return parent.to_string_lossy().to_string();
+        }
+    }
+    if !path.join("AetherGazer.exe").is_file() {
+        let nested = path.join("AetherGazer");
+        if nested.join("AetherGazer.exe").is_file() {
+            return nested.to_string_lossy().to_string();
+        }
+    }
+    clean
+}
+
+pub fn game_exe_exists(game_dir: &str) -> bool {
+    let normalized = normalize_game_dir(game_dir);
+    !normalized.is_empty() && Path::new(&normalized).join("AetherGazer.exe").is_file()
+}
+
 impl Default for Settings {
     fn default() -> Self {
-        let default_game = r"C:\Program Files\AetherGazerLauncher\AetherGazer";
         let appdata_server = default_appdata_server_dir();
         let _ = fs::create_dir_all(&appdata_server);
         Self {
-            game_dir: if Path::new(default_game).exists() {
-                default_game.to_string()
-            } else {
-                String::new()
-            },
+            game_dir: detect_default_game_dir(),
             workspace_dir: appdata_server.to_string_lossy().to_string(),
             auto_update: true,
         }
@@ -140,16 +199,15 @@ pub fn load_settings() -> Settings {
         .ok()
         .and_then(|raw| serde_json::from_str::<Settings>(&raw).ok())
         .unwrap_or_default();
-    if settings.workspace_dir.trim().is_empty() {
+    settings.workspace_dir = normalize_dir_input(&settings.workspace_dir);
+    if settings.workspace_dir.is_empty() {
         let appdata_server = default_appdata_server_dir();
         let _ = fs::create_dir_all(&appdata_server);
         settings.workspace_dir = appdata_server.to_string_lossy().to_string();
     }
-    if settings.game_dir.trim().is_empty() {
-        let default_game = r"C:\Program Files\AetherGazerLauncher\AetherGazer";
-        if Path::new(default_game).exists() {
-            settings.game_dir = default_game.to_string();
-        }
+    settings.game_dir = normalize_game_dir(&settings.game_dir);
+    if settings.game_dir.is_empty() {
+        settings.game_dir = detect_default_game_dir();
     }
     settings
 }
@@ -329,8 +387,7 @@ pub fn get_status(state: &ManagerState) -> Status {
     } else {
         "No instalado".to_string()
     };
-    let game_found = !settings.game_dir.trim().is_empty()
-        && Path::new(&settings.game_dir).join("AetherGazer.exe").exists();
+    let game_found = game_exe_exists(&settings.game_dir);
 
     Status {
         app_version: env!("CARGO_PKG_VERSION").to_string(),
@@ -449,13 +506,20 @@ pub fn stop_server(state: &ManagerState) -> Result<String, String> {
     Ok("Servidor detenido y archivo hosts restaurado.".to_string())
 }
 
-pub fn launch_game() -> Result<String, String> {
-    let settings = load_settings();
+pub fn launch_game(override_game_dir: Option<String>) -> Result<String, String> {
+    let mut settings = load_settings();
+    if let Some(raw) = override_game_dir {
+        let normalized = normalize_game_dir(&raw);
+        if !normalized.is_empty() && normalized != settings.game_dir {
+            settings.game_dir = normalized;
+            let _ = save_settings(&settings);
+        }
+    }
     if settings.game_dir.trim().is_empty() {
         return Err("Configura primero la carpeta de Aether Gazer.".to_string());
     }
     let exe = Path::new(&settings.game_dir).join("AetherGazer.exe");
-    if !exe.exists() {
+    if !exe.is_file() {
         return Err(format!("No se encontró {}", exe.display()));
     }
     Command::new(&exe)
