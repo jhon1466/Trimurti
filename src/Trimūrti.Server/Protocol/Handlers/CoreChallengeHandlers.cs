@@ -456,7 +456,7 @@ public sealed class CoreChallengeRewardHandler(CoreChallenge cl, GameAccountRepo
         frames.Insert(0, HandlerHelpers.Reply(codec, r, command + 1, new Dictionary<string, object?>
         {
             ["result"] = 0u,
-            ["reward_list"] = granted.Select(x => (object)new Dictionary<string, object?> { ["id"] = (uint)x.Item1, ["num"] = (uint)x.Item2 }).ToArray()
+            ["reward_list"] = HandlerHelpers.ToItemNetRecList(granted)
         }));
         frames.AddRange(await cl.PushAsync(codec, r, act, ct));
         return frames;

@@ -205,7 +205,7 @@ public sealed class Explore(GameAccountRepository accounts, SourceGameConfig con
         var granted = gives.Count > 0 ? await accounts.GrantItemsAsync(uid, gives.GroupBy(x => x.Item1).Select(g => (g.Key, g.Sum(x => x.Item2))), ct) : [];
         var frames = await InventorySync.FramesAsync(accounts, codec, r, granted.Select(x => x.Item1).Concat(costs.Select(c => c.Item1)), ct);
         reply["result"] = 0u;
-        if (cmd is 67006 or 67008) reply["reward_list"] = granted.Select(x => (object)new Dictionary<string, object?> { ["id"] = (uint)x.Item1, ["num"] = (uint)x.Item2 }).ToArray();
+        if (cmd is 67006 or 67008) reply["reward_list"] = HandlerHelpers.ToItemNetRecList(granted);
         frames.Add(HandlerHelpers.Reply(codec, r, cmd + 1, reply));
         frames.Add(new GameResponse(67001, 0, srv, codec.Encode("sc_67001", Payload(s))));
         if (taskDiff is not null) frames.Add(taskDiff);

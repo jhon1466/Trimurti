@@ -274,7 +274,7 @@ public sealed class SpheroLife(GameAccountRepository accounts, SourceGameConfig 
         catch (ModeError) { return [HandlerHelpers.ResultOnly(codec, r, cmd + 1, 2)]; }
         var granted = gives.Count > 0 ? await accounts.GrantItemsAsync(uid, gives.GroupBy(x => x.Item1).Select(g => (g.Key, g.Sum(x => x.Item2))), ct) : [];
         s.Earned = Math.Max(s.Earned + granted.Where(x => x.Item1 == 53100).Sum(x => x.Item2), await accounts.GetItemCountAsync(uid, 53100, ct));
-        if (cmd is 83005 or 83013 or 83022 or 83024) reply["reward_list"] = granted.Select(x => (object)new Dictionary<string, object?> { ["id"] = (uint)x.Item1, ["num"] = (uint)x.Item2 }).ToArray();
+        if (cmd is 83005 or 83013 or 83022 or 83024) reply["reward_list"] = HandlerHelpers.ToItemNetRecList(granted);
         await accounts.SetJsonAsync(uid, "sphero_life_v1", s, ct);
         var frames = await InventorySync.FramesAsync(accounts, codec, r, granted.Select(x => x.Item1).Concat(touched), ct);
         if (changed is not null) frames.Add(new GameResponse(83017, 0, srv, codec.Encode("sc_83017", new Dictionary<string, object?> { ["activity_id"] = Activity, ["schedule_list"] = new[] { SchedWire(changed) } })));

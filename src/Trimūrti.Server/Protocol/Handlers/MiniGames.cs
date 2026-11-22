@@ -13,7 +13,7 @@ public sealed class MiniGames(GameAccountRepository accounts, SourceGameConfig c
     private JsonElement C(string f) => config.Get(f) ?? throw new ModeError($"Missing {f}");
     private static void Require(bool ok, string m) { if (!ok) throw new ModeError(m); }
     private static int I(JsonElement e, string k) => e.TryGetProperty(k, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetInt32() : 0;
-    private static object[] Items(IEnumerable<(long, long)> x) => x.Select(i => (object)new Dictionary<string, object?> { ["id"] = (uint)i.Item1, ["num"] = (uint)i.Item2 }).ToArray();
+    private static object[] Items(IEnumerable<(long, long)> x) => HandlerHelpers.ToItemNetRecList(x);
 
     public sealed class State
     {

@@ -184,7 +184,7 @@ public sealed class QuanzhouQuests(GameAccountRepository accounts, SourceGameCon
         if (Diff(srv, before, s) is { } d) frames.Add(d);
         if (cmd == 28834) return frames;
         var reply = new Dictionary<string, object?> { ["result"] = 0u };
-        if (cmd is 28820 or 28822) reply["reward_list"] = granted.Select(x => (object)new Dictionary<string, object?> { ["id"] = (uint)x.Item1, ["num"] = (uint)x.Item2 }).ToArray();
+        if (cmd is 28820 or 28822) reply["reward_list"] = HandlerHelpers.ToItemNetRecList(granted);
         frames.Add(HandlerHelpers.Reply(codec, r, cmd + 1, reply));
         return frames;
     }

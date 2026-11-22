@@ -218,7 +218,7 @@ public sealed class HeartDemon(GameAccountRepository accounts, SourceGameConfig 
                 var frames = await InventorySync.FramesAsync(accounts, codec, r, granted.Select(x => x.Item1), ct);
                 frames.Add(HandlerHelpers.Reply(codec, r, 75003, new Dictionary<string, object?>
                 {
-                    ["result"] = 0u, ["reward_list"] = granted.Select(x => (object)new Dictionary<string, object?> { ["id"] = (uint)x.Item1, ["num"] = (uint)x.Item2 }).ToArray()
+                    ["result"] = 0u, ["reward_list"] = HandlerHelpers.ToItemNetRecList(granted)
                 }));
                 frames.Add(new GameResponse(75001, 0, srv, codec.Encode("sc_75001", SoloPayload(s))));
                 return frames;

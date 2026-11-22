@@ -749,7 +749,7 @@ public sealed class PolyhedronHandler(Polyhedron poly, GameAccountRepository acc
         frames.Add(command == 66000
             ? HandlerHelpers.Reply(codec, r, 66001, new Dictionary<string, object?>
             {
-                ["result"] = 0u, ["reward_list"] = granted.Select(x => (object)new Dictionary<string, object?> { ["id"] = (uint)x.Item1, ["num"] = (uint)x.Item2 }).ToArray()
+                ["result"] = 0u, ["reward_list"] = HandlerHelpers.ToItemNetRecList(granted)
             })
             : HandlerHelpers.ResultOnly(codec, r, command + 1));
         return frames;

@@ -283,7 +283,7 @@ public sealed class TaskSystem(GameAccountRepository accounts, SourceGameConfig 
         if (touchedPoints) frames.Add(new GameResponse(28019, 0, srv, codec.Encode("sc_28019", PointPayload(s))));
         frames.Add(HandlerHelpers.Reply(codec, r, cmd + 1, new Dictionary<string, object?>
         {
-            ["result"] = 0u, ["reward_list"] = granted.Select(x => (object)new Dictionary<string, object?> { ["id"] = (uint)x.Item1, ["num"] = (uint)x.Item2 }).ToArray()
+            ["result"] = 0u, ["reward_list"] = HandlerHelpers.ToItemNetRecList(granted)
         }));
         return frames;
     }

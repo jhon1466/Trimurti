@@ -41,7 +41,7 @@ public abstract class EventModeBase(GameAccountRepository accounts, SourceGameCo
     protected (uint, byte[]) Frame(uint cmd, Dictionary<string, object?> body) => (cmd, Codec.Encode($"sc_{cmd}", body));
     protected static IReadOnlyList<(long, long)> Pairs(JsonElement arr) =>
         arr.ValueKind == JsonValueKind.Array ? arr.EnumerateArray().Where(p => p.ValueKind == JsonValueKind.Array && p.GetArrayLength() >= 2).Select(p => (p[0].GetInt64(), p[1].GetInt64())).ToArray() : [];
-    protected static object[] Items(IEnumerable<(long, long)> items) => items.Select(x => (object)new Dictionary<string, object?> { ["id"] = (uint)x.Item1, ["num"] = (uint)x.Item2 }).ToArray();
+    protected static object[] Items(IEnumerable<(long, long)> items) => HandlerHelpers.ToItemNetRecList(items);
 
     /// <summary>Grants once per (kind,key) through the claim ledger.</summary>
     protected async Task<IReadOnlyList<(long, long)>> GrantOnceAsync(long uid, string kind, string key, IReadOnlyList<(long, long)> items, CancellationToken ct)

@@ -37,9 +37,9 @@ public sealed class DailySignHandler(GameAccountRepository accounts, SourceGameC
     private static IReadOnlyDictionary<string, object?> ToPayload(DailySignResult result)
     {
         var items = result.Rewards is { Count: > 0 } rewards
-            ? rewards.Select(x => (object)new Dictionary<string, object?> { ["id"] = x.ItemId, ["num"] = x.Count }).ToArray()
+            ? HandlerHelpers.ToItemNetRecList(rewards)
             : result.ItemId > 0
-                ? new object[] { new Dictionary<string, object?> { ["id"] = result.ItemId, ["num"] = result.ItemCount } }
+                ? HandlerHelpers.ToItemNetRecList([(result.ItemId, result.ItemCount)])
                 : Array.Empty<object>();
         return new Dictionary<string, object?>
         {
