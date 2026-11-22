@@ -179,7 +179,7 @@ public sealed partial class GameAccountRepository
             var first = clear == 0;
             if (recordProgress)
             {
-                var merged = Enumerable.Range(0, Math.Max(stars.Count, saved.Length))
+                var merged = Enumerable.Range(0, Math.Max(3, Math.Max(stars.Count, saved.Length)))
                     .Select(i => (i < saved.Length && saved[i] == 1) || (i < stars.Count && stars[i]) ? 1 : 0).ToArray();
                 clear += times;
                 await using var up = connection.CreateCommand();

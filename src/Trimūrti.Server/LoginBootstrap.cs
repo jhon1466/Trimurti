@@ -618,12 +618,17 @@ public sealed class LoginBootstrap(GameAccountRepository accounts, ProtoCodec co
         return frames;
     }
 
-    /// <summary>sc_24009 cleared stages with stars, straight from the chapter table (empty for a new account).</summary>
+    /// <summary>sc_24009 cleared stages with stars, straight from the chapter table (empty for a new account).
+    /// BattleStageData:CalcChapterStarCnt always sums stars[1..3] without nil checks, so star_list must have at least 3 entries.</summary>
     public static byte[] ChapterProgress(ProtoCodec codec, IReadOnlyList<LobbyChapter> chapters) => codec.Encode("sc_24009", new Dictionary<string, object?>
     {
         ["user_chapter_list"] = chapters.Select(chapter => (object?)new Dictionary<string, object?>
         {
-            ["id"] = chapter.Id, ["star_list"] = chapter.Stars.Cast<object?>().ToArray(), ["clear_times"] = chapter.ClearTimes
+            ["id"] = chapter.Id,
+            ["star_list"] = Enumerable.Range(0, Math.Max(3, chapter.Stars.Count))
+                .Select(i => (object?)(i < chapter.Stars.Count ? chapter.Stars[i] : 0))
+                .ToArray(),
+            ["clear_times"] = chapter.ClearTimes
         }).ToArray()
     });
 
