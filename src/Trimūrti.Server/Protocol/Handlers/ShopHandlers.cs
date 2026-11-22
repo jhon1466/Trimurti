@@ -61,17 +61,14 @@ public sealed class ShopSystem(GameAccountRepository accounts, SourceGameConfig 
                 if (gEl.ValueKind != JsonValueKind.Number) continue;
                 var gid = gEl.GetInt64();
                 var shopId = (int)(gid / 1_000_000);
-                if (shopId is not (15 or 16 or 17)) continue;
+                if (shopId is not (15 or 17) || !Cfg.GetProperty("shops").TryGetProperty(shopId.ToString(), out _)) continue;
                 if (_dynamicGoods.ContainsKey(gid)) continue;
 
                 var sort = sortCounter.GetValueOrDefault(shopId) + 1;
                 sortCounter[shopId] = sort;
-                var (costId, cost) = shopId switch
-                {
-                    15 => (24L, hasScene || level >= 1 ? 128L : 98L),
-                    16 => (24L, hasScene ? 98L : 68L),
-                    _ => (1L, 980L)
-                };
+                var (costId, cost) = shopId == 15
+                    ? (24L, hasScene || level >= 1 ? 128L : 98L)
+                    : (1L, 980L);
                 var dg = new DynamicGood(gid, shopId, sort, desc, sid, heroId, costId, cost, 2);
                 _dynamicGoods[gid] = dg;
                 if (!_dynamicByShop.TryGetValue(shopId, out var list)) _dynamicByShop[shopId] = list = [];
@@ -183,22 +180,16 @@ public sealed class ShopSystem(GameAccountRepository accounts, SourceGameConfig 
                 ["limit_display"] = 1u,
                 ["pre_goods_id"] = Array.Empty<uint>(),
                 ["refresh_cycle"] = 0u,
-                ["open_time"] = new Dictionary<string, object?>(),
-                ["close_time"] = new Dictionary<string, object?>(),
                 ["is_limit_time_discount"] = 0u,
-                ["cheap_open_time"] = new Dictionary<string, object?>(),
-                ["cheap_close_time"] = new Dictionary<string, object?>(),
                 ["tag"] = 0u,
-                ["next_goods_id"] = 0u,
+                ["next_goods_id"] = Array.Empty<uint>(),
                 ["give_back_list"] = Array.Empty<object>(),
                 ["dlc"] = 0u,
                 ["cost_id_2"] = 0u,
                 ["cost_2"] = 0u,
                 ["cheap_cost_id_2"] = 0u,
                 ["cheap_cost_2"] = 0u,
-                ["is_limit_time_discount_2"] = 0u,
-                ["cheap_open_time_2"] = new Dictionary<string, object?>(),
-                ["cheap_close_time_2"] = new Dictionary<string, object?>()
+                ["is_limit_time_discount_2"] = 0u
             }).ToArray()
         }).ToArray();
         return (20007, codec.Encode("sc_20007", new Dictionary<string, object?> { ["shop_item_cfg_list"] = list }));
