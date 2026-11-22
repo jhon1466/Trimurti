@@ -96,6 +96,20 @@ public sealed class OverdueQueryHandler(uint command, string field, ProtoCodec c
             new Dictionary<string, object?> { [field] = Array.Empty<object>() })]);
 }
 
+/// <summary>MomoTalk avatar icon (91016 -> 91017): persisted and sent in sc_91001 on login.</summary>
+public sealed class MomoTalkIconHandler(GameAccountRepository accounts, ProtoCodec codec) : IGameCommandHandler
+{
+    public uint Command => 91016;
+
+    public async ValueTask<IReadOnlyList<GameResponse>> HandleAsync(GameRequest r, CancellationToken ct)
+    {
+        var icon = HandlerHelpers.ReadUInt(r.Body, "icon");
+        if (icon == 0) return [HandlerHelpers.ResultOnly(codec, r, 91017, 2)];
+        await accounts.SetValueAsync(r.AccountId, "momotalk", "icon", icon, ct);
+        return [HandlerHelpers.ResultOnly(codec, r, 91017)];
+    }
+}
+
 /// <summary>Sticker suit rewards (32058 -> 32059): one-time claim per suit id, no item payout configured.</summary>
 public sealed class StickerSuitRewardHandler(GameAccountRepository accounts, ProtoCodec codec) : IGameCommandHandler
 {
