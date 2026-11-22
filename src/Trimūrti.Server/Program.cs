@@ -141,7 +141,9 @@ foreach (var (decoCommand, decoField, decoColumn) in new[] { (32114u, "id", "cur
 foreach (var (overdueCommand, overdueField) in new[] { (32062u, "icon_list"), (32066u, "chat_bubble_list") })
     builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler>(sp => new Trimūrti.Server.Protocol.Handlers.OverdueQueryHandler(overdueCommand, overdueField, sp.GetRequiredService<Trimūrti.Server.Protocol.ProtoCodec>()));
 builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler, Trimūrti.Server.Protocol.Handlers.ProfileTagsHandler>();
-builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler, Trimūrti.Server.Protocol.Handlers.MomoTalkIconHandler>();
+builder.Services.AddSingleton<Trimūrti.Server.Protocol.Handlers.MomoTalkSystem>();
+foreach (var c in Trimūrti.Server.Protocol.Handlers.MomoTalkSystem.Commands)
+    builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler>(sp => new Trimūrti.Server.Protocol.Handlers.ModeCommandHandler(c, sp.GetRequiredService<Trimūrti.Server.Protocol.Handlers.MomoTalkSystem>().HandleAsync));
 builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler, Trimūrti.Server.Protocol.Handlers.SimpleForeignInfoHandler>();
 builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler, Trimūrti.Server.Protocol.Handlers.ForeignHeroInfoHandler>();
 builder.Services.AddSingleton<Trimūrti.Server.Protocol.IGameCommandHandler, Trimūrti.Server.Protocol.Handlers.StickerSuitRewardHandler>();

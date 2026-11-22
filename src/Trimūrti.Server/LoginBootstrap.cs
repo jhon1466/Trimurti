@@ -580,8 +580,7 @@ public sealed class LoginBootstrap(GameAccountRepository accounts, ProtoCodec co
         // Mail brief and hero letters (due letters are delivered as mails first).
         frames.AddRange(await new Protocol.Handlers.MailSystem(accounts, new SourceGameConfig(), codec).LoginFramesAsync(uid, ct));
         frames.Add((56001, codec.Encode("sc_56001", new Dictionary<string, object?> { ["nothing"] = 0u, ["red_dot"] = Array.Empty<uint>(), ["client_finished_red_dot"] = Array.Empty<uint>() })));
-        var momoIcon = await accounts.GetValueAsync(uid, "momotalk", "icon", 1, ct);
-        frames.Add((91001, codec.Encode("sc_91001", new Dictionary<string, object?> { ["icon"] = (uint)(momoIcon > 0 ? momoIcon : 1), ["icon_list"] = new uint[] { 1, 2, 3 }, ["type_hero"] = Array.Empty<object>() })));
+        frames.Add(await new Protocol.Handlers.MomoTalkSystem(accounts, new SourceGameConfig(), codec).LoginFrameAsync(uid, ct));
 
         // Tasks / assignments: client AssignmentCfg with real progress, daily/weekly cycles and activity points.
         {

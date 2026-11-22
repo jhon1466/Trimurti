@@ -8,12 +8,11 @@ public static class ProfileAcks
     /// <summary>Result-only operations (UI state the client keeps itself):
     /// 32040/32060/32064/32206/32208/32112 overdue decoration cleanup, 32042/32044 recommend-equip / voice checks,
     /// 32054 touch poster girl, 32056 sticker page, 32068/32070 pure-mode table settings,
-    /// 32118 send like, 32122..32128 lobby random settings, 32052 skin gift, 53006 achievement story read,
-    /// 91002/91006/91014 MomoTalk progress.</summary>
+    /// 32118 send like, 32052 skin gift.</summary>
     public static readonly uint[] Commands =
     [
         32040, 32042, 32044, 32052, 32054, 32056, 32060, 32064, 32068, 32070, 32112, 32118,
-        32206, 32208, 91002, 91006, 91014
+        32206, 32208
     ];
 }
 
@@ -96,17 +95,149 @@ public sealed class OverdueQueryHandler(uint command, string field, ProtoCodec c
             new Dictionary<string, object?> { [field] = Array.Empty<object>() })]);
 }
 
-/// <summary>MomoTalk avatar icon (91016 -> 91017): persisted and sent in sc_91001 on login.</summary>
-public sealed class MomoTalkIconHandler(GameAccountRepository accounts, ProtoCodec codec) : IGameCommandHandler
+/// <summary>
+/// MomoTalk (sc_91001, cs_91002/91006/91014/91016) backed by the client's ChatMessageCfg (Data/Configs/momotalk_cfg.json):
+/// exposes all 266 character sessions grouped by sender and persists dialogue breakpoints, choices, read state and icon.
+/// </summary>
+public sealed class MomoTalkSystem(GameAccountRepository accounts, SourceGameConfig config, ProtoCodec codec)
 {
-    public uint Command => 91016;
+    public static readonly uint[] Commands = [91002, 91006, 91014, 91016];
+    private const string Kind = "momotalk_v1";
 
-    public async ValueTask<IReadOnlyList<GameResponse>> HandleAsync(GameRequest r, CancellationToken ct)
+    public sealed class SavePoint { public uint ContentId { get; set; } public uint State { get; set; } }
+    public sealed class SessionProgress
     {
-        var icon = HandlerHelpers.ReadUInt(r.Body, "icon");
-        if (icon == 0) return [HandlerHelpers.ResultOnly(codec, r, 91017, 2)];
-        await accounts.SetValueAsync(r.AccountId, "momotalk", "icon", icon, ct);
-        return [HandlerHelpers.ResultOnly(codec, r, 91017)];
+        public uint SendTime { get; set; }
+        public uint IsView { get; set; }
+        public uint CurrentContentId { get; set; }
+        public List<SavePoint> SaveList { get; set; } = [];
+    }
+    public sealed class State
+    {
+        public uint Icon { get; set; } = 1;
+        public Dictionary<uint, SessionProgress> Sessions { get; set; } = [];
+    }
+
+    private async Task<State> LoadAsync(long uid, CancellationToken ct) =>
+        await accounts.GetJsonAsync<State>(uid, Kind, ct) ?? new State();
+
+    private Task SaveAsync(long uid, State s, CancellationToken ct) =>
+        accounts.SetJsonAsync(uid, Kind, s, ct);
+
+    public async Task<(uint, byte[])> LoginFrameAsync(long uid, CancellationToken ct)
+    {
+        var s = await LoadAsync(uid, ct);
+        var now = (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var byType = new Dictionary<uint, Dictionary<uint, List<object>>>();
+
+        if (config.Get("momotalk_cfg.json") is { ValueKind: System.Text.Json.JsonValueKind.Object } cfg
+            && cfg.TryGetProperty("sessions", out var arr) && arr.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            foreach (var row in arr.EnumerateArray())
+            {
+                var sid = row.GetProperty("id").GetUInt32();
+                var mtype = row.GetProperty("type").GetUInt32();
+                if (mtype == 0) mtype = 1;
+                var sender = row.GetProperty("sender").GetUInt32();
+                if (!byType.TryGetValue(mtype, out var heroes)) byType[mtype] = heroes = [];
+                if (!heroes.TryGetValue(sender, out var list)) heroes[sender] = list = [];
+
+                var prog = s.Sessions.GetValueOrDefault(sid);
+                list.Add(new Dictionary<string, object?>
+                {
+                    ["id"] = sid,
+                    ["send_time"] = prog is { SendTime: > 0 } ? prog.SendTime : now,
+                    ["save_list"] = (prog?.SaveList ?? []).Select(sp => (object)new Dictionary<string, object?>
+                    {
+                        ["content_id"] = sp.ContentId, ["state"] = sp.State
+                    }).ToArray(),
+                    ["is_view"] = prog?.IsView ?? 0u,
+                    ["current_content_id"] = prog?.CurrentContentId ?? 0u
+                });
+            }
+        }
+
+        var typeHero = byType.OrderBy(kv => kv.Key).Select(kv => (object)new Dictionary<string, object?>
+        {
+            ["type"] = kv.Key,
+            ["hero_session"] = kv.Value.OrderBy(h => h.Key).Select(h => (object)new Dictionary<string, object?>
+            {
+                ["sender_id"] = h.Key,
+                ["session_list"] = h.Value.ToArray()
+            }).ToArray()
+        }).ToArray();
+
+        return (91001, codec.Encode("sc_91001", new Dictionary<string, object?>
+        {
+            ["icon"] = s.Icon > 0 ? s.Icon : 1u,
+            ["icon_list"] = new uint[] { 1, 2, 3, 4, 5 },
+            ["type_hero"] = typeHero
+        }));
+    }
+
+    public async Task<IReadOnlyList<GameResponse>> HandleAsync(GameRequest r, uint cmd, CancellationToken ct)
+    {
+        var uid = r.AccountId;
+        var s = await LoadAsync(uid, ct);
+        var now = (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        SessionProgress GetOrCreate(uint sid)
+        {
+            if (!s.Sessions.TryGetValue(sid, out var p)) s.Sessions[sid] = p = new SessionProgress { SendTime = now };
+            if (p.SendTime == 0) p.SendTime = now;
+            return p;
+        }
+
+        switch (cmd)
+        {
+            case 91014: // Add breakpoint
+            {
+                var sid = HandlerHelpers.ReadUInt(r.Body, "session_id");
+                var cid = HandlerHelpers.ReadUInt(r.Body, "content_id");
+                if (sid > 0 && cid > 0)
+                {
+                    var p = GetOrCreate(sid);
+                    p.CurrentContentId = cid;
+                    if (!p.SaveList.Any(x => x.ContentId == cid)) p.SaveList.Add(new SavePoint { ContentId = cid, State = 0 });
+                    await SaveAsync(uid, s, ct);
+                }
+                return [HandlerHelpers.ResultOnly(codec, r, 91015)];
+            }
+            case 91002: // Finish breakpoint / choice
+            {
+                var sid = HandlerHelpers.ReadUInt(r.Body, "session_id");
+                var cid = HandlerHelpers.ReadUInt(r.Body, "content_id");
+                var st = HandlerHelpers.ReadUInt(r.Body, "state");
+                if (sid > 0 && cid > 0)
+                {
+                    var p = GetOrCreate(sid);
+                    p.CurrentContentId = cid;
+                    var existing = p.SaveList.FirstOrDefault(x => x.ContentId == cid);
+                    if (existing is not null) existing.State = st;
+                    else p.SaveList.Add(new SavePoint { ContentId = cid, State = st });
+                    await SaveAsync(uid, s, ct);
+                }
+                return [HandlerHelpers.ResultOnly(codec, r, 91003)];
+            }
+            case 91006: // Mark session read
+            {
+                var sid = HandlerHelpers.ReadUInt(r.Body, "session_id");
+                if (sid > 0)
+                {
+                    GetOrCreate(sid).IsView = 1;
+                    await SaveAsync(uid, s, ct);
+                }
+                return [HandlerHelpers.ResultOnly(codec, r, 91007)];
+            }
+            case 91016: // Set avatar/frame icon
+            {
+                var icon = HandlerHelpers.ReadUInt(r.Body, "icon");
+                if (icon == 0) return [HandlerHelpers.ResultOnly(codec, r, 91017, 2)];
+                s.Icon = icon;
+                await SaveAsync(uid, s, ct);
+                return [HandlerHelpers.ResultOnly(codec, r, 91017)];
+            }
+        }
+        return [HandlerHelpers.ResultOnly(codec, r, cmd + 1, 2)];
     }
 }
 
